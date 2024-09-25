@@ -1,0 +1,98 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-volume:/data
+    ports:
+      - 6379:6379
+    restart: always
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_airflow
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    restart: always
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_airflow
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    restart: always
+
+  airflow-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_airflow
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://airflow:airflow@postgres/airflow
+    depends_on:
+      - postgres
+    restart: always
+
+  train-model:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_train_model
+    volumes:
+      - ./model:/train/model
+    restart: always
+
+volumes:
+  postgres-db-volume:
+  redis-volume:
+  model:
+
+

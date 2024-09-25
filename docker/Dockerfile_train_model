@@ -1,0 +1,29 @@
+# Dockerfile_train_model
+FROM python:3.8-slim
+
+# Passer à l'utilisateur root pour installer les dépendances système
+USER root
+
+# Installer les dépendances système nécessaires pour psycopg2
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    python3-dev \
+    build-essential \
+    && apt-get clean
+
+# Revenir à l'utilisateur root (aucun autre utilisateur n'est spécifié ici)
+USER root
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers du projet
+COPY ./app /app
+COPY ./requirements_train_model.txt /app/requirements.txt
+
+# Installation des dépendances Python
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Exécuter le script d'entraînement
+CMD ["python3", "train_model.py"]
+

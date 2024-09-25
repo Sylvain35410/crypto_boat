@@ -1,0 +1,18 @@
+# Airflow et ses dépendances
+apache-airflow==2.8.1
+apache-airflow-providers-postgres==2.3.0
+psutil==5.9.4
+termcolor==2.2.0
+apscheduler==3.9.1
+
+# Flask et email-validator pour éviter le conflit
+flask-appbuilder==4.3.10
+email-validator<2,>=1.0.5  # Version ajustée pour éviter le conflit avec flask-appbuilder
+
+# Connectivité à la base de données PostgreSQL
+psycopg2==2.9.9
+sqlalchemy>=1.4.28,<2.0
+
+# Bibliothèques pour la gestion de la date/heure (si nécessaire dans Airflow)
+pendulum==2.1.2
+

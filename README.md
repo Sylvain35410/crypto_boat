@@ -1,44 +1,120 @@
-CryptoBot
-Project Overview
-This repository outlines the development of a cryptocurrency trading bot. The project leverages various technologies to handle data, process it in real-time, and deploy the solution effectively. The objective is to build a sophisticated trading system that uses Machine Learning for decision-making in the cryptocurrency market.
 
-Project Steps
+# CryptoBoat
 
-Step 1 / Data Discovery
-Objective: Define the project scope and gather data from various sources such as APIs and web pages.
-Technologies Used: Python for data collection
-Deliverable: A report detailing the different data sources and examples of the collected data.
+## Description
+CryptoBoat est un projet de prédiction et de surveillance en temps réel du marché des cryptomonnaies, avec un focus sur les paires BTC/USDT et ETH/USDT. Le projet télécharge et analyse les données historiques et en temps réel depuis les plateformes Binance et CoinGecko, entraîne des modèles de prédiction, et fournit des décisions basées sur l'évolution des prix. Le projet utilise Airflow pour orchestrer les tâches, FastAPI pour l'API REST, et Dash pour afficher les données sur un tableau de bord.
 
-Step 2 / Data Organization
-Objective: Structure and organize data using SQL databases. Utilize Kafka for data ingestion and Spark Streaming for processing.
-Technologies Used: Kafka for data ingestion, Spark Streaming for processing data in real-time, SQL databases (e.g., MySQL or PostgreSQL) for structured data management.
-Deliverable: Documentation of the data architecture, including a UML diagram.
+## Fonctionnalités
+1. **Téléchargement des données historiques** : Les données des paires BTC/USDT et ETH/USDT sont téléchargées depuis Binance pour la période du 01-08-2017 au 01-08-2024, avec un intervalle par défaut de 15 minutes. Ces données sont mises à jour toutes les 15 minutes.
+2. **Stream de données en temps réel** : Les données des paires BTC/USDT et ETH/USDT sont récupérées en temps réel toutes les 5 secondes via WebSocket et stockées dans la table `stream_crypto_data`.
+3. **Prédiction de la fermeture de la bougie actuelle** : Un modèle de prédiction est entraîné chaque mois à partir des données historiques, et les prédictions sont effectuées en temps réel.
+4. **Tableau de bord interactif** : Le tableau de bord Dash affiche les données historiques des 30 derniers jours, les prédictions actuelles, et les caractéristiques des cryptomonnaies.
+5. **Gestion des utilisateurs** : Les utilisateurs peuvent être créés, supprimés et authentifiés via l'API FastAPI.
+6. **Orchestration avec Airflow** : Toutes les tâches de téléchargement, de mise à jour, d'entraînement de modèles et de prédiction sont orchestrées par Airflow.
 
-Step 3 / Data Consumption
-Objective: Develop and train Machine Learning models to utilize the organized data and address trading challenges.
-Technologies Used: Machine Learning for model development.
-Deliverable: A Machine Learning model that processes data and provides trading recommendations.
+## Structure du Projet
 
-Step 4 / Deployment
-Objective: Develop APIs to serve the Machine Learning model. Containerize the API and the application using Docker. Monitor system performance.
-Technologies Used: FastAPI and Flask for API development, Docker for containerization, Grafana for performance monitoring.
-Deliverable: A deployed API with Docker containers, unit tests, and monitoring setup.
+```bash
+crypto_boat/
+│
+├── dags/                                # DAGs d'Airflow
+│   ├── data_ingestion_dag.py            # Ingestion des données toutes les 15 minutes
+│   └── model_training_dag.py            # Entraînement des modèles chaque mois
+│
+├── docker/                              # Fichiers Docker
+│   ├── Dockerfile_api                   # Dockerfile pour l'API FastAPI
+│   ├── Dockerfile_train_model           # Dockerfile pour l'entraînement des modèles
+│   └── Dockerfile_airflow               # Dockerfile pour Airflow
+│
+├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
+│
+├── sql/                                 # Scripts SQL
+│   ├── init_db.sql                      # Initialisation de la base de données
+│   └── sql_manager.py                   # Script SQL pour gérer les actions sur les données
+│
+├── app/                                 # API et tableau de bord
+│   ├── app.py                           # API FastAPI
+│   ├── utils.py                         # Fonctions utilitaires pour la base de données
+│   ├── dashboard.py                     # Tableau de bord Dash
+│   ├── requirements.txt                 # Dépendances pour l'API
+│   └── train_model.py                   # Script d'entraînement des modèles
+│
+├── scripts/                             # Scripts pour la récupération et le stockage des données
+│   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
+│   ├── store_data.py                    # Stockage des données dans PostgreSQL
+│   ├── websocket_stream.py              # Gestion du WebSocket pour les données en temps réel
+│   └── export_users_to_csv.py           # Exportation des utilisateurs dans un fichier CSV
+│
+├── users/                               # Répertoire pour stocker les fichiers CSV des utilisateurs
+│
+├── docker-compose.yml                   # Fichier de configuration Docker Compose
+├── README.md                            # Documentation du projet
+└── main.py                              # Fichier principal pour orchestrer l'exécution du projet
+```
 
-Step 5 / Automation & Monitoring
-Objective: Automate data processing and model updates. Set up scheduling and orchestration for data tasks using Airflow and Crontab. Monitor the application in production.
-Technologies Used: Airflow and Crontab for scheduling and automating tasks, Kafka and Spark Streaming for data processing, Grafana for monitoring.
-Deliverable: Automated workflows with Airflow and Crontab, CI/CD integration, and monitoring solutions.
-Step 6 / Application Demonstration & Presentation
-Objective: Present the project, explain the data architecture, and demonstrate that the application is functional. Detailed discussion on data consumption is not required.
-Deliverable: A 20-minute presentation and a 10-minute Q&A session, showcasing the project's functionality and architecture.
+## Prérequis
 
+- **Docker** : Version 20.x ou supérieure
+- **Docker Compose** : Version 1.29.2 ou supérieure
+- **Airflow** : Version 2.8.1
+- **Python** : Version 3.8
 
-Technologies Used
-Kafka: For managing high-throughput data streams.
-Spark Streaming: For real-time data processing and analytics.
-SQL: For structured data storage and querying.
-Machine Learning: For predictive modeling and trading strategies.
-FastAPI & Flask: For API development and serving model predictions.
-Docker: For containerizing the application to ensure consistent deployment.
-Grafana: For monitoring and visualizing system performance.
+## Installation
 
+1. Clonez le dépôt du projet :
+   ```bash
+   git clone https://github.com/your-repo/crypto_boat.git
+   cd crypto_boat
+   ```
+
+2. Créez et configurez un fichier `.env` pour les clés d'API Binance et CoinGecko :
+   ```bash
+   echo "BINANCE_API_KEY=your_binance_api_key" > .env
+   echo "BINANCE_API_SECRET=your_binance_api_secret" >> .env
+   ```
+
+3. Construisez et lancez les conteneurs Docker avec Docker Compose :
+   ```bash
+   docker-compose up --build
+   ```
+
+4. Accédez à l'interface Airflow pour vérifier les DAGs : 
+   ```
+   http://localhost:8080
+   ```
+
+5. Le tableau de bord Dash est accessible à l'adresse :
+   ```
+   http://localhost:8050
+   ```
+
+6. L'API FastAPI est accessible à l'adresse :
+   ```
+   http://localhost:8000
+   ```
+
+## Fonctionnement
+
+1. **Ingestion des données** : Les données des paires BTC/USDT et ETH/USDT sont téléchargées via Binance et CoinGecko et stockées dans la base de données PostgreSQL.
+2. **Prédiction des prix** : Un modèle de forêt aléatoire est entraîné chaque mois avec les données historiques, et utilisé pour prédire la fermeture de la bougie en cours.
+3. **Affichage en temps réel** : Le tableau de bord Dash affiche les données historiques, les prédictions et les informations en temps réel via l'API et les données de la table `stream_crypto_data`.
+
+## Endpoints API
+
+- **/healthcheck** : Vérifie l'état de la base de données.
+- **/train** : Lance l'entraînement d'un modèle pour une paire et un intervalle donnés.
+- **/predict** : Renvoie la prédiction du prix de fermeture de la bougie actuelle.
+- **/add_user** : Ajoute un utilisateur dans le fichier CSV.
+- **/import_users** : Importe les utilisateurs depuis un fichier CSV dans la base de données.
+
+## Configuration
+
+Les paramètres de configuration, comme les intervalles de téléchargement des données et les modèles à entraîner, sont ajustables dans les fichiers de configuration Airflow et les scripts associés.
+
+## Auteur
+
+- [LAKACHE Khaled](https://github.com/Klakache)
+
+## Licence
+
+Ce projet est sous licence [MIT](LICENSE).
