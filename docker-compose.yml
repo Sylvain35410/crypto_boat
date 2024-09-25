@@ -7,6 +7,8 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
@@ -23,10 +25,22 @@ services:
       - 6379:6379
     restart: always
 
+  airflow-init:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_airflow
+    command: version
+    environment:
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+
   airflow-webserver:
     build:
       context: .
       dockerfile: docker/Dockerfile_airflow
+    command: webserver
     environment:
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -44,6 +58,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile_airflow
+    command: scheduler
     environment:
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -59,6 +74,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile_airflow
+    command: celery worker
     environment:
       - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -70,25 +86,25 @@ services:
       - ./plugins:/opt/airflow/plugins
     restart: always
 
-  api:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile_api
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://airflow:airflow@postgres/airflow
-    depends_on:
-      - postgres
-    restart: always
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile_api
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://airflow:airflow@postgres/airflow
+  #   depends_on:
+  #     - postgres
+  #   restart: always
 
-  train-model:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile_train_model
-    volumes:
-      - ./model:/train/model
-    restart: always
+  # train-model:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile_train_model
+  #   volumes:
+  #     - ./model:/train/model
+  #   restart: always
 
 volumes:
   postgres-db-volume:
