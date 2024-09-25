@@ -83,6 +83,9 @@ crypto_boat/
    docker-compose up --build
    ```
 
+# Initialisez la database
+# psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
+
 4. Accédez à l'interface Airflow pour vérifier les DAGs : 
    ```
    http://localhost:8080
