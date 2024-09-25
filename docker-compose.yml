@@ -94,5 +94,3 @@ volumes:
   postgres-db-volume:
   redis-volume:
   model:
-
-

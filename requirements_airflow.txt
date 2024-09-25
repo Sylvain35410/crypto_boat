@@ -15,4 +15,3 @@ sqlalchemy>=1.4.28,<2.0
 
 # Bibliothèques pour la gestion de la date/heure (si nécessaire dans Airflow)
 pendulum==2.1.2
-

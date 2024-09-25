@@ -16,40 +16,45 @@ CryptoBoat est un projet de prédiction et de surveillance en temps réel du mar
 
 ```bash
 crypto_boat/
+|
+├── app/                                 # API et tableau de bord
+│   ├── app.py                           # API FastAPI
+│   ├── dashboard.py                     # Tableau de bord Dash
+│   ├── train_model.py                   # Script d'entraînement des modèles
+│   └── utils.py                         # Fonctions utilitaires pour la base de données
 │
 ├── dags/                                # DAGs d'Airflow
-│   ├── data_ingestion_dag.py            # Ingestion des données toutes les 15 minutes
-│   └── model_training_dag.py            # Entraînement des modèles chaque mois
+│   ├── crypto_data_ingestion_dag.py   ?
+│   ├── train_model_dag.py             ?
+│   ├── websocket_stream_dag.py        ?
+│   ├── data_ingestion_dag.py          ? # Ingestion des données toutes les 15 minutes
+│   └── model_training_dag.py          ? # Entraînement des modèles chaque mois
 │
 ├── docker/                              # Fichiers Docker
+│   ├── Dockerfile_airflow               # Dockerfile pour Airflow
 │   ├── Dockerfile_api                   # Dockerfile pour l'API FastAPI
-│   ├── Dockerfile_train_model           # Dockerfile pour l'entraînement des modèles
-│   └── Dockerfile_airflow               # Dockerfile pour Airflow
+│   └── Dockerfile_train_model           # Dockerfile pour l'entraînement des modèles
 │
 ├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
+│
+├── scripts/                             # Scripts pour la récupération et le stockage des données
+│   ├── export_users_to_csv.py           # Exportation des utilisateurs dans un fichier CSV
+│   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
+│   ├── store_data.py                    # Stockage des données dans PostgreSQL
+│   └── websocket_stream.py              # Gestion du WebSocket pour les données en temps réel
 │
 ├── sql/                                 # Scripts SQL
 │   ├── init_db.sql                      # Initialisation de la base de données
 │   └── sql_manager.py                   # Script SQL pour gérer les actions sur les données
-│
-├── app/                                 # API et tableau de bord
-│   ├── app.py                           # API FastAPI
-│   ├── utils.py                         # Fonctions utilitaires pour la base de données
-│   ├── dashboard.py                     # Tableau de bord Dash
-│   ├── requirements.txt                 # Dépendances pour l'API
-│   └── train_model.py                   # Script d'entraînement des modèles
-│
-├── scripts/                             # Scripts pour la récupération et le stockage des données
-│   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
-│   ├── store_data.py                    # Stockage des données dans PostgreSQL
-│   ├── websocket_stream.py              # Gestion du WebSocket pour les données en temps réel
-│   └── export_users_to_csv.py           # Exportation des utilisateurs dans un fichier CSV
-│
+|
 ├── users/                               # Répertoire pour stocker les fichiers CSV des utilisateurs
 │
 ├── docker-compose.yml                   # Fichier de configuration Docker Compose
+├── main.py                              # Fichier principal pour orchestrer l'exécution du projet
 ├── README.md                            # Documentation du projet
-└── main.py                              # Fichier principal pour orchestrer l'exécution du projet
+├── requirements_airflow.txt             # Dépendances pour Airflow
+├── requirements_api.txt                 # Dépendances pour l'API
+└── requirements_train_model.txt         # Dépendances pour l'entrainement du modèle
 ```
 
 ## Prérequis

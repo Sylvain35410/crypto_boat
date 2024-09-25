@@ -25,4 +25,3 @@ websockets==10.3
 plotly==5.10.0
 dash==2.7.0
 matplotlib==3.7.1
-

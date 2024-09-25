@@ -18,4 +18,3 @@ apscheduler==3.9.1
 
 # WebSocket pour le streaming des données Binance (si tu utilises des flux de données pour l'entraînement)
 websockets==10.3
-
