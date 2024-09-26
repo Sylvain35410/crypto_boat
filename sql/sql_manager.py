@@ -4,12 +4,11 @@ import pandas as pd
 class CryptoDataHandler:
     def __init__(self):
         try:
-            print("Establishing connection to the PostgreSQL database...")
             self.conn = psycopg2.connect(
-                dbname="crypto_data",
+                dbname="cryptoboat_db",
                 user="airflow",
                 password="airflow",
-                host="localhost",
+                host="0.0.0.0",
                 port="5432"
             )
             self.curr = self.conn.cursor()
@@ -97,3 +96,19 @@ class CryptoDataHandler:
             print(f"Error inserting stream data: {e}")
             raise
 
+    # Fonction pour compter les lignes de chaque table
+    def counter(self):
+        try:
+            query = "SELECT tablename FROM pg_tables WHERE tablename not like 'pg_%' AND tablename not like 'sql_%'"
+            self.curr.execute(query)
+            tables = [item[0] for item in self.curr.fetchall()]
+
+            for table in sorted(tables):
+                query = f"SELECT count(*) FROM {table}"
+                self.curr.execute(query)
+                data = self.curr.fetchone()
+                print(f"Table : {table:25s} Nombre de ligne : {data[0]}")
+
+        except Exception as e:
+            print(f"Error count: {e}")
+            raise
