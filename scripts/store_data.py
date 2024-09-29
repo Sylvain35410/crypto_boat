@@ -1,91 +1,11 @@
-
-
 import psycopg2
 import logging
-
-# Fonction pour stocker les données de CoinGecko dans PostgreSQL
-def store_crypto_characteristics(crypto_data):
-    connection = None
-    try:
-        connection = psycopg2.connect(
-            dbname="crypto_data",
-            user="airflow",  
-            password="airflow",  
-            host="localhost",
-            port="5432"
-        )
-        cursor = connection.cursor()
-
-        query = '''
-            INSERT INTO crypto_characteristics (name, symbol, market_cap, circulating_supply, max_supply)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (symbol) DO UPDATE 
-            SET market_cap = EXCLUDED.market_cap,
-                circulating_supply = EXCLUDED.circulating_supply,
-                max_supply = EXCLUDED.max_supply
-        '''
-        values = (
-            crypto_data['name'], 
-            crypto_data['symbol'], 
-            crypto_data['market_cap'], 
-            crypto_data['circulating_supply'], 
-            crypto_data['max_supply']
-        )
-        cursor.execute(query, values)
-        connection.commit()
-        cursor.close()
-
-        logging.info(f"Données CoinGecko pour {crypto_data['symbol']} stockées avec succès.")
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(f"Erreur lors de l'insertion des données CoinGecko dans PostgreSQL : {error}")
-    finally:
-        if connection is not None:
-            connection.close()
-
-# Fonction pour stocker les données historiques de Binance dans PostgreSQL
-def store_historical_data(symbol, interval_id, candlestick_data):
-    connection = None
-    try:
-        connection = psycopg2.connect(
-            dbname="crypto_data",
-            user="airflow",
-            password="airflow",
-            host="localhost",
-            port="5432"
-        )
-        cursor = connection.cursor()
-
-        query = '''
-            INSERT INTO historical_crypto_data (
-                id_crypto_characteristics, id_interval, open_time, open_price, high_price, low_price, close_price, 
-                volume, close_time, quote_asset_volume, number_of_trades, taker_buy_base_asset_volume, 
-                taker_buy_quote_asset_volume
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        '''
-
-        cursor.executemany(query, candlestick_data)
-        connection.commit()
-        cursor.close()
-
-        logging.info(f"Données historiques de Binance pour {symbol} stockées avec succès.")
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(f"Erreur lors du stockage des données historiques de Binance dans PostgreSQL : {error}")
-    finally:
-        if connection is not None:
-            connection.close()
+from scripts.lib_sql import __connect_db
 
 # Fonction pour stocker les données en temps réel de Binance dans PostgreSQL (stream_crypto_data)
 def store_stream_data(stream_data):
-    connection = None
     try:
-        connection = psycopg2.connect(
-            dbname="crypto_data",
-            user="airflow",
-            password="airflow",
-            host="localhost",
-            port="5432"
-        )
+        connection = __connect_db()
         cursor = connection.cursor()
 
         query = '''
@@ -129,8 +49,7 @@ def store_stream_data(stream_data):
 
         logging.info(f"Données de flux en temps réel pour {stream_data['symbol']} stockées avec succès.")
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(f"Erreur lors du stockage des données de flux en temps réel dans PostgreSQL : {error}")
+        raise Exception(f"Erreur lors du stockage des données de flux en temps réel dans PostgreSQL : {error}")
     finally:
         if connection is not None:
             connection.close()
-

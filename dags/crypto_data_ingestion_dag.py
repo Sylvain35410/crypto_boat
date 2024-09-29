@@ -1,4 +1,5 @@
 from airflow import DAG
+from airflow.exceptions import AirflowFailException
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
@@ -19,38 +20,52 @@ with DAG(
     'crypto_data_ingestion_dag',
     default_args=default_args,
     description='Ingest crypto data every 15 minutes',
-    schedule_interval='*/15 * * * *',  # Exécution toutes les 15 minutes
+    # schedule_interval='*/15 * * * *',  # Exécution toutes les 15 minutes
+    schedule_interval=None,  # Exécution toutes les 15 minutes
 ) as dag:
 
-    # Groupe de tâches pour récupérer les données depuis l'API Binance et CoinGecko
-    with TaskGroup("fetch_group") as fetch_group:
-        
-        def fetch_data():
-            from scripts.fetch_data import fetch_and_store_all_data
-            fetch_and_store_all_data("BTCUSDT")
-            fetch_and_store_all_data("ETHUSDT")
+    # Groupe de tâches pour récupérer les données depuis CoinGecko
+    with TaskGroup("fetch_coin_gecko") as fetch_coin_gecko:
+        def fetch_coin_gecko_data(symbol):
+            from scripts.fetch_data import fetch_coin_gecko_data
+            try:
+                fetch_coin_gecko_data(symbol)
+            except Exception as error:
+                raise
 
-        fetch_data_task = PythonOperator(
-            task_id='fetch_crypto_data',
-            python_callable=fetch_data
+        fetch_crypto_BTCUSDT = PythonOperator(
+            task_id='fetch_crypto_BTCUSDT',
+            python_callable=fetch_coin_gecko_data,
+            op_kwargs={'symbol': 'BTCUSDT'}
         )
 
-    # Groupe de tâches pour stocker les données dans la base de données PostgreSQL
-    with TaskGroup("store_group") as store_group:
+        fetch_crypto_ETHUSDT = PythonOperator(
+            task_id='fetch_crypto_ETHUSDT',
+            python_callable=fetch_coin_gecko_data,
+            op_kwargs={'symbol': 'ETHUSDT'}
+        )
 
-        def store_data():
-            from scripts.store_data import store_historical_data
-            # Les données sont déjà stockées dans fetch_data, donc cette tâche peut rester vide
-            pass
+    # Groupe de tâches pour récupérer les données depuis l'API Binance
+    with TaskGroup("fetch_binance") as fetch_binance:
+        def fetch_binance_data(symbol):
+            from scripts.fetch_data import fetch_binance_data
+            try:
+                fetch_binance_data(symbol, interval="15m", start_date="2017-09-01", end_date="2017-10-05")
+            except Exception as error:
+                raise
 
-        store_data_task = PythonOperator(
-            task_id='store_crypto_data',
-            python_callable=store_data
+        fetch_binance_BTCUSDT = PythonOperator(
+            task_id='fetch_binance_BTCUSDT',
+            python_callable=fetch_binance_data,
+            op_kwargs={'symbol': 'BTCUSDT'}
+        )
+
+        fetch_binance_ETHUSDT = PythonOperator(
+            task_id='fetch_binance_ETHUSDT',
+            python_callable=fetch_binance_data,
+            op_kwargs={'symbol': 'ETHUSDT'}
         )
 
     # Ordonnancement des tâches
-    fetch_group >> store_group
-
-
-
-
+    fetch_crypto_BTCUSDT >> fetch_binance_BTCUSDT
+    fetch_crypto_ETHUSDT >> fetch_binance_ETHUSDT
