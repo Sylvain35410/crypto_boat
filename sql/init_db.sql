@@ -26,8 +26,9 @@ CREATE TABLE IF NOT EXISTS crypto_characteristics (
     name VARCHAR(50) NOT NULL,
     symbol VARCHAR(16) NOT NULL,
     market_cap BIGINT,
-    circulating_supply BIGINT,
-    max_supply BIGINT
+    circulating_supply FLOAT,
+    max_supply FLOAT,
+    CONSTRAINT unique_symbol UNIQUE (symbol)
 );
 
 -- Création de la table intervals
@@ -53,7 +54,8 @@ CREATE TABLE IF NOT EXISTS historical_crypto_data (
     taker_buy_base_asset_volume FLOAT NOT NULL,
     taker_buy_quote_asset_volume FLOAT NOT NULL,
     FOREIGN KEY (id_crypto_characteristics) REFERENCES crypto_characteristics (id_crypto_characteristics),
-    FOREIGN KEY (id_interval) REFERENCES intervals (id_interval)
+    FOREIGN KEY (id_interval) REFERENCES intervals (id_interval),
+    CONSTRAINT unique_historical_crypto_data UNIQUE (id_crypto_characteristics, id_interval, open_time)
 );
 
 -- Création de la table stream_crypto_data
