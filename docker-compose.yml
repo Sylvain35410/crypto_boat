@@ -80,6 +80,9 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+      - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
+      - PYTHONPATH=/opt/airflow/
+    env_file: ".env"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -93,7 +96,8 @@ services:
   #   ports:
   #     - "8000:8000"
   #   environment:
-  #     - DATABASE_URL=postgresql://airflow:airflow@postgres/airflow
+  #     - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
+  #     - PYTHONPATH=/opt/airflow/
   #   depends_on:
   #     - postgres
   #   restart: always

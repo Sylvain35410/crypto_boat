@@ -21,9 +21,8 @@ COPY ./requirements_airflow.txt /opt/airflow/requirements.txt
 RUN pip install --no-cache-dir -r /opt/airflow/requirements.txt
 
 # Copier les scripts et les DAGs Airflow
-COPY ./dags /opt/airflow/dags
+COPY ./dags    /opt/airflow/dags
+COPY ./model   /opt/airflow/model
 COPY ./scripts /opt/airflow/scripts
-COPY ./sql /opt/airflow/sql
-COPY ./users /opt/airflow/users
-COPY ./model /opt/airflow/model
-
+COPY ./sql     /opt/airflow/sql
+COPY ./users   /opt/airflow/users
