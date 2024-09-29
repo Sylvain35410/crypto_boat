@@ -19,7 +19,8 @@ with DAG(
     'train_model_dag',
     default_args=default_args,
     description='Entraîner les modèles crypto tous les mois',
-    schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
+    # schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
+    schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
     # Groupe de tâches pour préparer les données d'entraînement
@@ -75,5 +76,5 @@ with DAG(
         )
 
     # Ordonnancement des tâches
-    prepare_btc_data_task >> prepare_eth_data_task >> train_btc_model_task >> train_eth_model_task >> save_btc_model_task >> save_eth_model_task
-
+    prepare_btc_data_task >> train_btc_model_task >> save_btc_model_task
+    prepare_eth_data_task >> train_eth_model_task >> save_eth_model_task

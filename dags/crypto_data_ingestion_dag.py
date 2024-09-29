@@ -21,7 +21,7 @@ with DAG(
     default_args=default_args,
     description='Ingest crypto data every 15 minutes',
     # schedule_interval='*/15 * * * *',  # Exécution toutes les 15 minutes
-    schedule_interval=None,  # Exécution toutes les 15 minutes
+    schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
     # Groupe de tâches pour récupérer les données depuis CoinGecko
