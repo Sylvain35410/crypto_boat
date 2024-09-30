@@ -84,8 +84,8 @@ services:
       - PYTHONPATH=/opt/airflow/
     env_file: ".env"
     volumes:
-      - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+      - ./model:/opt/airflow/model
       - ./plugins:/opt/airflow/plugins
     restart: always
 
