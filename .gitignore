@@ -1,4 +1,5 @@
 .env
 logs/
 test/
+model/*
 **/__pycache__/
