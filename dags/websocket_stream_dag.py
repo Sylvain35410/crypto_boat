@@ -24,20 +24,23 @@ with DAG(
 ) as dag:
 
     # Tâche pour démarrer le WebSocket
-    def start_websocket_stream():
-        from scripts.websocket_stream import start_websocket_streams
-        try:
-            logging.info("Démarrage du flux WebSocket pour BTC et ETH.")
-            start_websocket_streams()
-        except Exception as e:
-            logging.error(f"Erreur lors du démarrage du flux WebSocket : {e}")
-            raise
+    def start_websocket_stream(symbol, interval):
+        from scripts.websocket_stream import start_websocket_stream_from_binance
+        start_websocket_stream_from_binance(symbol, interval)
 
     # Opérateur Python pour lancer le flux WebSocket
-    start_stream_task = PythonOperator(
-        task_id='start_websocket_streams',
+    start_btc_stream_task = PythonOperator(
+        task_id='start_btc_stream',
         python_callable=start_websocket_stream,
+        op_kwargs={'symbol': 'BTCUSDT', 'interval': '15m'}
     )
 
-    start_stream_task
+    start_eth_stream_task = PythonOperator(
+        task_id='start_eth_stream',
+        python_callable=start_websocket_stream,
+        op_kwargs={'symbol': 'ETHUSDT', 'interval': '15m'}
+    )
 
+    # Ordonnancement des tâches
+    start_btc_stream_task
+    start_eth_stream_task
