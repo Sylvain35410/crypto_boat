@@ -74,7 +74,11 @@ CREATE TABLE IF NOT EXISTS stream_crypto_data (
     base_asset_volume FLOAT NOT NULL,
     number_of_trades FLOAT NOT NULL,
     is_this_kline_closed BOOLEAN NOT NULL,
-    FOREIGN KEY (id_crypto_characteristics) REFERENCES crypto_characteristics (id_crypto_characteristics)
+    quote_asset_volume FLOAT NOT NULL,
+    taker_buy_base_asset_volume FLOAT NOT NULL,
+    taker_buy_quote_asset_volume FLOAT NOT NULL,
+    FOREIGN KEY (id_crypto_characteristics) REFERENCES crypto_characteristics (id_crypto_characteristics),
+    CONSTRAINT unique_stream_crypto_data UNIQUE (id_crypto_characteristics)
 );
 
 -- Insertion des valeurs pour les intervalles
