@@ -25,7 +25,7 @@ crypto_boat/
 ├── dags/                                # DAGs d'Airflow
 │   ├── crypto_data_ingestion_dag.py     # Ingestion des données toutes les 15 minutes
 │   ├── train_model_dag.py               # Entraînement des modèles chaque mois
-│   └── websocket_stream_dag.py        ?
+│   └── websocket_stream_dag.py          # Ingestion des données en temps réél
 │
 ├── docker/                              # Fichiers Docker
 │   ├── Dockerfile_airflow               # Dockerfile pour Airflow
@@ -41,13 +41,13 @@ crypto_boat/
 ├── scripts/                             # Scripts pour la récupération et le stockage des données
 │   ├── export_users_to_csv.py           # Exportation des utilisateurs dans un fichier CSV
 │   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
+│   ├── lib_sql.py                       # Librairie pour la base de données
 │   ├── store_data.py                    # Stockage des données dans PostgreSQL
 │   ├── train_model.py                   # Script d'entraînement des modèles
 │   └── websocket_stream.py              # Gestion du WebSocket pour les données en temps réel
 │
 ├── sql/                                 # Scripts SQL
-│   ├── init_db.sql                      # Initialisation de la base de données
-│   └── sql_manager.py                   # Script SQL pour gérer les actions sur les données
+│   └── init_db.sql                      # Initialisation de la base de données
 |
 ├── users/                               # Répertoire pour stocker les fichiers CSV des utilisateurs
 │
@@ -69,36 +69,38 @@ crypto_boat/
 ## Installation
 
 1. Clonez le dépôt du projet :
-   ```bash
-   git clone https://github.com/your-repo/crypto_boat.git
-   cd crypto_boat
-   ```
+```bash
+git clone https://github.com/your-repo/crypto_boat.git
+cd crypto_boat
+```
 
 2. Créez et configurez un fichier `.env` pour les clés d'API Binance et CoinGecko :
-   ```bash
-   echo "BINANCE_API_KEY=your_binance_api_key" > .env
-   echo "BINANCE_API_SECRET=your_binance_api_secret" >> .env
-   ```
+```bash
+echo "BINANCE_API_KEY=your_binance_api_key" > .env
+echo "BINANCE_API_SECRET=your_binance_api_secret" >> .env
+```
 
 3. Construisez et lancez les conteneurs Docker avec Docker Compose :
-   ```bash
-   docker-compose up --build
-   ```
+```bash
+docker-compose up --build
+```
 
-# Initialisez la database
-# psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
+4. Initialisez la database
+```bash
+psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
+```
 
-4. Accédez à l'interface Airflow pour vérifier les DAGs : 
+5. Accédez à l'interface Airflow pour vérifier les DAGs : 
    ```
    http://localhost:8080
    ```
 
-5. Le tableau de bord Dash est accessible à l'adresse :
+6. Le tableau de bord Dash est accessible à l'adresse :
    ```
    http://localhost:8050
    ```
 
-6. L'API FastAPI est accessible à l'adresse :
+7. L'API FastAPI est accessible à l'adresse :
    ```
    http://localhost:8000
    ```
@@ -124,6 +126,7 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 ## Auteur
 
 - [LAKACHE Khaled](https://github.com/Klakache)
+- [PUJOS Sylvain](https://github.com/Sylvain35410)
 
 ## Licence
 
