@@ -1,27 +1,36 @@
 import os
 import psycopg2
-# import pandas as pd
-
+import pandas as pd
 
 # Récupérer les caractéristiques de la cryptomonnaie
-def get_crypto_characteristics(symbol):
+def get_id_crypto_characteristics(symbol):
     query = "SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = %s"
     return __get_query_to_one_value(query,(symbol,))
-
-# Fonction pour récupérer la dernière heure d'ouverture stockée
-def get_last_open_time(id_symbol, id_interval):
-    query = "SELECT MAX(open_time) FROM historical_crypto_data WHERE id_crypto_characteristics = %s AND id_interval = %s"
-    return __get_query_to_one_value(query,(id_symbol,id_interval))
 
 # Fonction pour récupérer l'id d'un intervale
 def get_id_interval(interval):
     query = "SELECT id_interval FROM intervals WHERE intervals LIKE %s"
     return __get_query_to_one_value(query,(interval,))
 
+# Fonction pour récupérer la dernière heure d'ouverture stockée
+def get_last_open_time(id_symbol, id_interval):
+    query = "SELECT MAX(open_time) FROM historical_crypto_data WHERE id_crypto_characteristics = %s AND id_interval = %s"
+    return __get_query_to_one_value(query,(id_symbol,id_interval))
 
+# Fonction pour récupérer les données historiques
+def get_historical_data_to_df(id_symbol, id_interval):
+    query = '''
+        SELECT open_price, high_price, low_price, close_price,
+            volume, quote_asset_volume, number_of_trades, 
+            taker_buy_base_asset_volume, taker_buy_quote_asset_volume
+        FROM historical_crypto_data
+        WHERE id_crypto_characteristics = %s
+          AND id_interval = %s
+        ORDER BY open_time DESC
+    '''
+    return __get_query_to_df(query,(id_symbol,id_interval))
 
-
-# Fonction pour stocker les données de CoinGecko dans PostgreSQL
+# Fonction pour stocker les données de CoinGecko
 def insert_crypto_characteristics(crypto_data):
     try:
         connection = __connect_db()
@@ -47,7 +56,7 @@ def insert_crypto_characteristics(crypto_data):
         print(f"Error inserting CoinGecko data: {e}")
         raise
 
-# Fonction pour insérer des données historiques dans la base de données
+# Fonction pour insérer des données historiques
 def insert_historical_data( candlestick_data ):
     try:
         query = '''
@@ -65,11 +74,9 @@ def insert_historical_data( candlestick_data ):
         raise
 
 
-
-
-
-
-
+############################################################
+# Fonctions privés pour l'accés et les requêtes à la BDD
+############################################################
 
 # Connexion à la base de données PostgreSQL
 def __connect_db():
@@ -82,11 +89,15 @@ def __connect_db():
         raise Exception(f"Erreur lors de la connexion à la BDD : {error}")
 
 # Query to DataFrame
-# def __get_query_to_df(query):
-#     conn = __connect_db()
-#     df = pd.read_sql(query, conn)
-#     conn.close()
-#     return df
+def __get_query_to_df(query, values):
+    try:
+        DATABASE_URL = os.getenv('DATABASE_URL')
+        DATABASE_URL='postgresql://airflow:airflow@postgres/cryptoboat_db'
+
+        df = pd.read_sql(query, DATABASE_URL, params=values)
+        return df
+    except (Exception, psycopg2.DatabaseError) as error:
+        raise Exception(f"Erreur lors de la connexion à la BDD : {error}")
 
 # Query to One value
 def __get_query_to_one_value(query, where=None):
@@ -120,13 +131,12 @@ def __get_query_to_many_values(query, where=None):
         if connection is not None:
             connection.close()
 
-
 # Execute to One values
-def __execute_query_to_one_value(query, value):
+def __execute_query_to_one_value(query, values):
     try:
         connection = __connect_db()
         cursor = connection.cursor()
-        cursor.execute(query, value)
+        cursor.execute(query, values)
         connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         print(f"Erreur lors de l'execution de la requete : {query}")

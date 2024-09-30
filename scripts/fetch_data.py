@@ -5,7 +5,7 @@ import pytz
 import requests
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
-from scripts.lib_sql import get_crypto_characteristics, get_last_open_time, get_id_interval, insert_historical_data, insert_crypto_characteristics
+from scripts.lib_sql import get_id_crypto_characteristics, get_last_open_time, get_id_interval, insert_historical_data, insert_crypto_characteristics
 
 # Configuration de l'API Binance
 BINANCE_API_KEY    = os.getenv('BINANCE_API_KEY')
@@ -105,7 +105,7 @@ def fetch_binance_data(symbol, interval, start_date, end_date):
     end_time = int(datetime.strptime(end_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC).timestamp() * 1000)
 
     id_interval    = get_id_interval( interval )
-    id_symbol      = get_crypto_characteristics(symbol)
+    id_symbol      = get_id_crypto_characteristics(symbol)
     last_open_time = get_last_open_time(id_symbol, id_interval)
 
     # Aucune donnée pour ce symbole
