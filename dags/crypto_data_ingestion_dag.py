@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.exceptions import AirflowFailException
+from airflow.models import Variable
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
@@ -49,10 +49,22 @@ with DAG(
     with TaskGroup("fetch_binance") as fetch_binance:
         def fetch_binance_data(symbol):
             from scripts.fetch_data import fetch_binance_data
-            try:
-                fetch_binance_data(symbol, interval="15m", start_date="2017-09-01", end_date="2017-10-05")
-            except Exception as error:
-                raise
+            interval = Variable.get(key='crypto_data_ingestion_interval', default_var=None)
+            if interval is None:
+                Variable.set(key='crypto_data_ingestion_interval', value='15m', description='Interval for crypto_data_ingestion DAG')
+                interval = '15m'
+
+            start_date = Variable.get(key='crypto_data_ingestion_date_start', default_var=None)
+            if start_date is None:
+                Variable.set(key='crypto_data_ingestion_date_start', value='2017-09-01', description='Start date for crypto_data_ingestion DAG')
+                start_date = '2017-09-01'
+
+            end_date = Variable.get(key='crypto_data_ingestion_date_end', default_var=None)
+            if end_date is None:
+                Variable.set(key='crypto_data_ingestion_date_end', value='2017-10-06', description='End date for crypto_data_ingestion DAG')
+                end_date = '2017-10-06'
+
+            fetch_binance_data(symbol, interval, start_date, end_date)
 
         fetch_binance_BTCUSDT = PythonOperator(
             task_id='fetch_binance_BTCUSDT',

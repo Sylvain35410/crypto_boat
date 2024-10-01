@@ -1,4 +1,5 @@
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
@@ -23,20 +24,35 @@ with DAG(
     schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
-    def train_crypto_model(symbol, interval):
+    def train_crypto_model(symbol):
         from scripts.train_model import training
-        training(symbol, interval)
+        interval = Variable.get(key='train_model_interval', default_var=None)
+        if interval is None:
+            Variable.set(key='train_model_interval', value='15m', description='Interval for train_model DAG')
+            interval = '15m'
+
+        start_date = Variable.get(key='train_model_date_start', default_var=None)
+        if start_date is None:
+            Variable.set(key='train_model_date_start', value='2017-09-01', description='Start date for train_model DAG')
+            start_date = '2017-09-01'
+
+        end_date = Variable.get(key='train_model_date_end', default_var=None)
+        if end_date is None:
+            Variable.set(key='train_model_date_end', value='2017-10-06', description='End date for train_model DAG')
+            end_date = '2017-10-06'
+
+        training(symbol, interval, start_date, end_date)
 
     train_btc_model_task = PythonOperator(
         task_id='train_btc_model',
         python_callable=train_crypto_model,
-        op_kwargs={'symbol': 'BTCUSDT', 'interval': '15m'}
+        op_kwargs={'symbol': 'BTCUSDT'}
     )
 
     train_eth_model_task = PythonOperator(
         task_id='train_eth_model',
         python_callable=train_crypto_model,
-        op_kwargs={'symbol': 'ETHUSDT', 'interval': '15m'}
+        op_kwargs={'symbol': 'ETHUSDT'}
     )
 
     # Ordonnancement des tâches

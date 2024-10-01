@@ -1,8 +1,8 @@
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from datetime import timedelta
-import logging
 
 # Configuration des paramètres par défaut du DAG
 default_args = {
@@ -26,6 +26,11 @@ with DAG(
     # Tâche pour démarrer le WebSocket
     def start_websocket_stream(symbol, interval):
         from scripts.websocket_stream import start_websocket_stream_from_binance
+        interval = Variable.get(key='websocket_stream_interval', default_var=None)
+        if interval is None:
+            Variable.set(key='websocket_stream_interval', value='15m', description='Interval for websocket_stream DAG')
+            interval = '15m'
+
         start_websocket_stream_from_binance(symbol, interval)
 
     # Opérateur Python pour lancer le flux WebSocket

@@ -18,7 +18,7 @@ def get_last_open_time(id_symbol, id_interval):
     return __get_query_to_one_value(query,(id_symbol,id_interval))
 
 # Fonction pour récupérer les données historiques
-def get_historical_data_to_df(id_symbol, id_interval):
+def get_historical_data_to_df(id_symbol, id_interval, start_time, end_time):
     query = '''
         SELECT open_price, high_price, low_price, close_price,
             volume, quote_asset_volume, number_of_trades, 
@@ -26,9 +26,10 @@ def get_historical_data_to_df(id_symbol, id_interval):
         FROM historical_crypto_data
         WHERE id_crypto_characteristics = %s
           AND id_interval = %s
+          AND open_time BETWEEN %s AND %s
         ORDER BY open_time DESC
     '''
-    return __get_query_to_df(query,(id_symbol,id_interval))
+    return __get_query_to_df(query,(id_symbol,id_interval, start_time, end_time))
 
 # Fonction pour stocker les données de CoinGecko
 def insert_crypto_characteristics(crypto_data):

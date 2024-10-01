@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import psycopg2
+import pytz
 from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -17,13 +18,16 @@ from scripts.lib_sql import get_id_crypto_characteristics, get_id_interval, get_
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Fonction pour charger les données historiques depuis PostgreSQL
-def load_training_data(symbol, interval):
+def load_training_data(symbol, interval, start_date, end_date):
     logging.info(f"Chargement des données historiques.")
     try:
         id_interval = get_id_interval( interval )
         id_symbol   = get_id_crypto_characteristics(symbol)
-        result      = get_historical_data_to_df(id_symbol, id_interval)
-        # result = result[:500]
+
+        start_time = int(datetime.strptime(start_date, '%Y-%m-%d').replace(tzinfo=pytz.UTC).timestamp() * 1000)
+        end_time   = int(datetime.strptime(end_date  , '%Y-%m-%d').replace(tzinfo=pytz.UTC).timestamp() * 1000)
+
+        result      = get_historical_data_to_df(id_symbol, id_interval, start_time, end_time)
     except Exception as e:
         raise
 
@@ -96,11 +100,11 @@ def save_model(symbol, interval, model):
         logging.error(f"Erreur lors de la sauvegarde du modèle : {e}")
 
 # Fonction principale pour l'entraînement du modèle
-def training(symbol, interval):
+def training(symbol, interval, start_date, end_date):
     logging.info(f"Début de l'entraînement pour {symbol} avec interval {interval}.")
 
     # Chargement des données historiques
-    features = load_training_data(symbol, interval)
+    features = load_training_data(symbol, interval, start_date, end_date)
 
     # Préparation des données pour l'entraînement et de test
     X_train, X_test, y_train, y_test = prepare_data(features)
@@ -115,4 +119,4 @@ def training(symbol, interval):
 
 # Exemple d'appel
 if __name__ == "__main__":
-    training("BTCUSDT", "15m")
+    training("BTCUSDT", "15m", '2017-09-01', '2017-10-06')
