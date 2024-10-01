@@ -11,11 +11,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && apt-get clean
 
-# Revenir à l'utilisateur normal si nécessaire (dans ce cas, aucun utilisateur spécifique)
-USER root
-
-# Définir le répertoire de travail
-WORKDIR /app
+# Copier l'application
+COPY ./app /app
 
 # Copier le fichier requirements.txt dans le conteneur
 COPY ./requirements_api.txt /app/requirements.txt
@@ -23,12 +20,11 @@ COPY ./requirements_api.txt /app/requirements.txt
 # Installer les dépendances Python
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Copier le reste de l'application
-COPY ./app /app
+# Définir le répertoire de travail
+WORKDIR /app
 
 # Exposer le port de l'application
 EXPOSE 8000
 
 # Lancer l'application FastAPI
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -38,6 +38,9 @@ services:
     environment:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
     depends_on:
       redis:
         condition: service_healthy
@@ -97,18 +100,18 @@ services:
       - ./plugins:/opt/airflow/plugins
     restart: always
 
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile_api
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
-  #     - PYTHONPATH=/opt/airflow/
-  #   depends_on:
-  #     - postgres
-  #   restart: always
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
+    env_file: ".env"
+    depends_on:
+      - postgres
+    restart: always
 
   # train-model:
   #   build:
