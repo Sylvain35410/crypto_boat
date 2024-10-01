@@ -108,7 +108,6 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
-    env_file: ".env"
     depends_on:
       - postgres
     restart: always
