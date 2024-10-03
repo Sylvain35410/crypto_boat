@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_users UNIQUE (id_users, username)
 );
 
 -- Création de la table crypto_characteristics
@@ -34,7 +35,8 @@ CREATE TABLE IF NOT EXISTS crypto_characteristics (
 -- Création de la table intervals
 CREATE TABLE IF NOT EXISTS intervals (
     id_interval SERIAL PRIMARY KEY,
-    intervals VARCHAR(4) NOT NULL
+    intervals VARCHAR(4) NOT NULL,
+    CONSTRAINT unique_intervals UNIQUE (id_interval, intervals)
 );
 
 -- Création de la table historical_crypto_data
@@ -81,15 +83,22 @@ CREATE TABLE IF NOT EXISTS stream_crypto_data (
     CONSTRAINT unique_stream_crypto_data UNIQUE (id_crypto_characteristics)
 );
 
+
+-- ALTER TABLE users ADD CONSTRAINT unique_users UNIQUE (id_users, username);
+-- ALTER TABLE intervals ADD CONSTRAINT unique_intervals UNIQUE (id_interval, intervals);
+
 -- Insertion des valeurs pour les intervalles
-INSERT INTO intervals (intervals)
+INSERT INTO intervals (id_interval, intervals)
 VALUES
-    ('15m'),   -- scalping
-    ('1h'),    -- horaire
-    ('4h'),    -- horaire
-    ('1d'),    -- journalier
-    ('1w'),    -- hebdomadaire
-    ('1M');    -- mensuel
+    (1, '15m'),   -- scalping
+    (2, '1h'),    -- horaire
+    (3, '4h'),    -- horaire
+    (4, '1d'),    -- journalier
+    (5, '1w'),    -- hebdomadaire
+    (6, '1M')    -- mensuel
+ON CONFLICT (id_interval, intervals) DO NOTHING;
 
-
-
+INSERT INTO users (id_users, username, email, password_hash)
+VALUES
+    (1, 'admin', 'admin@localhost.local', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918')
+ON CONFLICT (id_users, username) DO NOTHING;
