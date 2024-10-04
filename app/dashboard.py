@@ -8,28 +8,59 @@ import os
 import requests
 from app.tools_app import get_current_stream_price
 
-# Connexion à la base de données PostgreSQL
+
+# Fonction pour se connecter à la base de données PostgreSQL et exécuter une requête
 def get_data_from_db(query):
+    """
+    Fonction pour se connecter à la base de données PostgreSQL, exécuter une requête SQL et retourner les résultats sous forme de DataFrame Pandas.
+    
+    Arguments:
+    - query (str): La requête SQL à exécuter.
+    
+    Retour:
+    - pd.DataFrame: Les résultats de la requête sous forme de DataFrame Pandas.
+    """
     DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://airflow:airflow@postgres/crypto_db')
     conn = psycopg2.connect(DATABASE_URL)
     df = pd.read_sql(query, conn)
     conn.close()
     return df
 
-# Récupérer les données historiques depuis la base de données pour la paire et l'intervalle choisis
+
+# Fonction pour récupérer les données historiques sur 30 jours pour une paire et un intervalle choisis
 def get_real_data(symbol, interval):
+    """
+    Récupère les données historiques (open, high, low, close, volume) pour les 30 derniers jours pour un symbole et un intervalle donnés.
+    
+    Arguments:
+    - symbol (str): Le symbole de la cryptomonnaie (ex: 'BTCUSDT').
+    - interval (str): L'intervalle de temps (ex: '15m').
+    
+    Retour:
+    - pd.DataFrame: Les données historiques sous forme de DataFrame.
+    """
     query = f"""
     SELECT open_time, open_price, high_price, low_price, close_price, volume
     FROM historical_crypto_data
     WHERE id_crypto_characteristics = (SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = '{symbol}')
     AND id_interval = (SELECT id_interval FROM intervals WHERE intervals = '{interval}')
+    AND open_time >= NOW() - INTERVAL '30 days'  -- Récupère les données des 30 derniers jours
     ORDER BY open_time DESC
-    LIMIT 1000  -- Limite les données à 1 mois
     """
     return get_data_from_db(query)
 
-# Récupérer les caractéristiques de la cryptomonnaie
+
+# Fonction pour récupérer les caractéristiques de la cryptomonnaie
 def get_crypto_characteristics(symbol):
+    """
+    Récupère les caractéristiques d'une cryptomonnaie (nom, symbol, market_cap, circulating_supply, max_supply).
+    
+    Arguments:
+    - symbol (str): Le symbole de la cryptomonnaie (ex: 'BTCUSDT').
+    
+    Retour:
+    - pd.DataFrame: Les caractéristiques de la cryptomonnaie sous forme de DataFrame.
+    """
     query = f"""
     SELECT name, symbol, market_cap, circulating_supply, max_supply
     FROM crypto_characteristics
@@ -37,17 +68,35 @@ def get_crypto_characteristics(symbol):
     """
     return get_data_from_db(query)
 
-# Récupérer la prédiction depuis l'API FastAPI
+
+# Fonction pour récupérer les données de prédiction via l'API FastAPI
 def get_predicted_data(symbol):
+    """
+    Récupère les données de prédiction via l'API FastAPI.
+    
+    Arguments:
+    - symbol (str): Le symbole de la cryptomonnaie (ex: 'BTCUSDT').
+    
+    Retour:
+    - dict: Les résultats de la prédiction sous forme de dictionnaire.
+    """
     API_BASE_URL = 'http://localhost:8000'
     response = requests.get(f'{API_BASE_URL}/predict', params={'symbol': symbol})
     return response.json()
 
+
+# Fonction pour construire et démarrer le tableau de bord Dash
 def build_dashboard():
+    """
+    Construit et configure le tableau de bord Dash avec les graphiques pour les données historiques, la prédiction et l'histogramme de volume.
+    
+    Retour:
+    - app (dash.Dash): L'application Dash prête à être exécutée.
+    """
     app = dash.Dash(__name__)
 
     app.layout = html.Div(children=[
-        html.H1("Crypto Prediction Dashboard"),
+        html.H1("CBot Crypto Prediction Dashboard"),
 
         html.Div([
             html.Label("Select Symbol:"),
@@ -95,6 +144,16 @@ def build_dashboard():
         Input('interval-dropdown', 'value')]
     )
     def update_dashboard(symbol, interval):
+        """
+        Met à jour les graphiques du tableau de bord lorsque l'utilisateur change le symbole ou l'intervalle.
+
+        Arguments:
+        - symbol (str): Le symbole de la cryptomonnaie sélectionnée (ex: 'BTCUSDT').
+        - interval (str): L'intervalle sélectionné (ex: '15m').
+        
+        Retour:
+        - tuple: Les objets pour les graphiques et les informations à afficher dans le tableau de bord.
+        """
         # Récupérer les données historiques depuis la base de données
         real_data = get_real_data(symbol, interval)
         
@@ -124,7 +183,7 @@ def build_dashboard():
             name='Predicted Data'
         )
 
-        # Histogramme du volume
+        # Histogramme du volume pour les 30 derniers jours
         volume_trace = go.Bar(
             x=[row['open_time'] for index, row in real_data.iterrows()],
             y=real_data['volume'],
@@ -160,3 +219,10 @@ def build_dashboard():
 
     return app
 
+
+if __name__ == '__main__':
+    """
+    Point d'entrée du fichier, démarre le serveur Dash si le script est exécuté directement.
+    """
+    app = build_dashboard()
+    app.run_server(debug=True, host='0.0.0.0', port=8050)
