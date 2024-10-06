@@ -23,9 +23,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Ajout de l'utilisateur admin par défaut
--- Cet utilisateur admin par défaut est créé si aucun utilisateur n'existe.
-INSERT INTO users (id_users, username, email, password_hash, created_at, updated_at)
-VALUES (1, 'admin', 'opa2024dst@gmail.com', crypt('adminopa2024', gen_salt('bf')), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+-- Cet utilisateur admin par défaut est créé si aucun utilisateur n'existe. 'adminopa2024'
+INSERT INTO users (id_users, username, email, password_hash)
+VALUES (1, 'admin', 'opa2024dst@gmail.com', 'e7d48b0232d872e73dbfbe13c4087a29de3514862c84d9bc9b413fddffa174bd')
 ON CONFLICT (id_users) DO NOTHING;
 
 -- Création de la table crypto_characteristics
