@@ -98,63 +98,52 @@ def make_prediction_and_decision(symbol, interval="15m"):
         "decision": decision
     }
 
-# Fonction pour récupérer le prix de clôture du stream et le prochain intervalle de temps (par défaut 15 minutes)
-def get_current_stream_price(symbol, interval='15m'):
+# Fonction pour récupérer le prix actuel du stream
+def get_current_stream_price(symbol):
     """
-    Fonction pour récupérer le dernier prix de clôture de la cryptomonnaie en temps réel ainsi que le prochain intervalle de temps.
+    Fonction pour récupérer le dernier prix de clôture de la cryptomonnaie en temps réel.
 
     Arguments :
     - `symbol` (str) : Le symbole de la cryptomonnaie (par exemple 'BTC').
 
     Description :
-    - Récupère le dernier prix de clôture et calcule l'heure du prochain intervalle de temps basé sur le dernier `event_time`.
+    - Récupère le dernier prix de clôture.
     - Utilise les données en temps réel stockées dans la table `stream_crypto_data`.
 
     Retour :
-    - Un DataFrame Pandas avec le prix de clôture et le prochain intervalle de temps.
+    - le prix de clôture.
     """
-    # try:
-    #     connection = __connect_db()
-    #     cursor = connection.cursor()
+    try:
+        connection = __connect_db()
+        cursor = connection.cursor()
 
-    #     # Requête SQL pour récupérer le prix de clôture et le prochain intervalle de temps
-    #     query = '''
-    #         SELECT 
-    #             close_price,
-    #             to_char(to_timestamp(event_time / 1000) + INTERVAL %s, 'YYYY-MM-DD HH24:MI:00') AS next_time
-    #         FROM stream_crypto_data
-    #         WHERE id_crypto_characteristics = (
-    #             SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = %s
-    #         )
-    #         ORDER BY event_time DESC
-    #         LIMIT 1
-    #     '''
-    #     # Conversion de l'intervalle en format PostgreSQL (par exemple '15 minutes')
-    #     interval_mapping = {
-    #         '15m': '15 minutes',
-    #         '1h': '1 hour',
-    #         '4h': '4 hours',
-    #         '1d': '1 day',
-    #         '1w': '1 week',
-    #         '1M': '1 month'
-    #     }
-    #     pg_interval = interval_mapping.get(interval, '15 minutes')  # Utiliser 15 minutes par défaut
+        # Requête SQL pour récupérer le prix de clôture et le prochain intervalle de temps
+        query = '''
+            SELECT 
+                close_price,
+            FROM stream_crypto_data
+            WHERE id_crypto_characteristics = (
+                SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = %s
+            )
+            ORDER BY event_time DESC
+            LIMIT 1
+        '''
 
-    #     # Exécuter la requête
-    #     cursor.execute(query, (pg_interval, symbol))
-    #     data = cursor.fetchall()
-    #     connection.commit()
+        # Exécuter la requête
+        cursor.execute(query, (symbol))
+        current_price = cursor.fetchone()
+        connection.commit()
 
-    #     # Retourner les données
-    #     if data:
-    #         return pd.DataFrame(data, columns=['close_price', 'next_time'])
-    #     else:
-    #         raise Exception(f"No stream data found for symbol {symbol}")
+        # Retourner le prix
+        if current_price:
+            return current_price[0]
+        else:
+            return None
 
-    # except Exception as e:
-    #     print(f"get_stream_price_and_next_time: unable to retrieve data. Error: {e}")
-    #     raise
+    except Exception as e:
+        print(f"get_current_stream_price: unable to retrieve data. Error: {e}")
+        raise
 
-    # finally:
-    #     if connection is not None:
-    #         connection.close()
+    finally:
+        if connection is not None:
+            connection.close()
