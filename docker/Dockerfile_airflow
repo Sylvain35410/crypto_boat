@@ -11,17 +11,17 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && apt-get clean
 
-# Revenir à l'utilisateur airflow pour installer les paquets Python
+# Revenir à l'utilisateur airflow pour les dernières configurations
 USER airflow
 
-# Copier le fichier requirements.txt
+# Copier le fichier requirements_airflow.txt
 COPY ./requirements_airflow.txt /opt/airflow/requirements.txt
 
 # Installation des dépendances Python spécifiques à Airflow
 RUN pip install --no-cache-dir -r /opt/airflow/requirements.txt
 
-# Copier les scripts et les DAGs Airflow
-COPY ./dags    /opt/airflow/dags
+# Copier les DAGs, scripts, et SQL dans Airflow
+COPY ./app /opt/airflow/app
+COPY ./dags /opt/airflow/dags
 COPY ./scripts /opt/airflow/scripts
-COPY ./sql     /opt/airflow/sql
-COPY ./users   /opt/airflow/users
+COPY ./sql /opt/airflow/sql

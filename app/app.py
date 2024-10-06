@@ -1,47 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from utils import check_database_health, load_model, make_prediction, add_user_to_csv, import_users_from_csv, get_stream_data
-from apscheduler.schedulers.background import BackgroundScheduler
-import psycopg2
-import os
+from fastapi.security import HTTPBasicCredentials, HTTPBasic
+from pydantic import EmailStr
+from email_validator import validate_email, EmailNotValidError
+from scripts.lib_sql import (
+    check_database_health, add_user_to_db, 
+    delete_user_from_db, get_current_user
+)
+from tools_app import make_prediction_and_decision
 
-app = FastAPI()
 security = HTTPBasic()
 
-# Fonction pour lire le fichier users.csv et importer les utilisateurs
-def scheduled_import_users():
-    try:
-        imported_users = import_users_from_csv()
-        print(f"{imported_users} nouveaux utilisateurs ont été importés avec succès.")
-    except Exception as e:
-        print(f"Erreur lors de l'importation des utilisateurs : {e}")
-
-# Planification de la tâche pour exécuter toutes les 2 heures
-scheduler = BackgroundScheduler()
-scheduler.add_job(scheduled_import_users, 'interval', hours=2)
-scheduler.start()
-
-# Afficher un message indiquant que les nouveaux utilisateurs seront ajoutés dans 2 heures
-@app.get("/next_import")
-async def next_import():
-    return {"message": "Les nouveaux utilisateurs seront ajoutés dans 2 heures."}
-
-# Fonction d'authentification basique pour sécuriser les endpoints
-def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
-    conn = psycopg2.connect(os.getenv('DATABASE_URL'))
-    cursor = conn.cursor()
-    query = "SELECT username, password_hash FROM users WHERE username = %s"
-    cursor.execute(query, (credentials.username,))
-    user = cursor.fetchone()
-    conn.close()
-
-    if user and user[1] == credentials.password:
-        return credentials.username
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Identifiants invalides",
-        headers={"WWW-Authenticate": "Basic"},
-    )
+app = FastAPI()
 
 # Endpoint healthcheck pour vérifier l'état de la base de données
 @app.get("/healthcheck")
@@ -49,79 +18,93 @@ async def healthcheck():
     if check_database_health():
         return {"status": "healthy", "database": "connected"}
     else:
-        raise HTTPException(status_code=503, detail="Base de données déconnectée")
+        raise HTTPException(status_code=503, detail="Database disconnected")
 
-# Endpoint pour faire une prédiction avec le modèle
-@app.get("/predict")
-async def predict_close_price(symbol: str, interval: str, current_user: str = Depends(get_current_user)):
-    """
-    Prédiction de la clôture du prix pour la paire de cryptomonnaie donnée.
-    """
-    try:
-        model = load_model(symbol, interval)
-        prediction = make_prediction(model)
-        return {
-            "user": current_user,
-            "symbol": symbol,
-            "interval": interval,
-            "prediction": f"Le prix de clôture prédit est {prediction['prediction']} à {prediction['timestamp']}"
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la prédiction : {str(e)}")
-
-# Endpoint pour ajouter un utilisateur dans le fichier CSV
+# Endpoint pour ajouter un utilisateur dans la base de données
 @app.post("/add_user")
-async def add_user(username: str, email: str, password: str):
+async def add_user(username: str, email: EmailStr, password: str):
     """
-    Ajoute un utilisateur dans le fichier CSV. Le mot de passe est haché avant l'enregistrement.
+    Ajoute un utilisateur dans la base de données. Le mot de passe est haché avant l'enregistrement.
+
+    Requête CURL :
+    curl -X 'POST' \
+        'http://localhost:8000/add_user?username=admin&email=opa2024dst@gmail.com&password=adminopa2024' \
+        -H 'accept: application/json'
     """
     try:
-        add_user_to_csv(username, email, password)
-        return {"message": f"L'utilisateur {username} a été ajouté avec succès."}
+        # Vérification de l'adresse email
+        try:
+            valid = validate_email(email)
+            email = valid.email
+        except EmailNotValidError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        add_user_to_db(username, email, password)
+        return {"message": f"User {username} added successfully."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error adding user: {str(e)}")
 
-# Endpoint pour importer les utilisateurs depuis un fichier CSV dans la base de données
-@app.post("/import_users")
-async def import_users():
+# Endpoint pour supprimer un utilisateur de la base de données
+@app.delete("/delete_user")
+async def delete_user(username: str, credentials: HTTPBasicCredentials = Depends(security)):
     """
-    Importe les utilisateurs depuis le fichier CSV dans la base de données PostgreSQL.
+    Supprime un utilisateur de la base de données.
+
+    Requête CURL :
+    curl -X 'DELETE' \
+        'http://localhost:8000/delete_user?username=admin' \
+        -H 'accept: application/json' \
+        -u user:password
     """
+    current_user = get_current_user(credentials)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
     try:
-        imported_users = import_users_from_csv()
-        return {"message": f"{imported_users} utilisateurs importés depuis le fichier CSV dans la base de données."}
+        delete_user_from_db(username)
+        return {"message": f"User {username} deleted successfully."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de l'importation des utilisateurs : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting user: {str(e)}")
 
-# Endpoint pour prendre une décision Buy/Hold/Sell
-@app.get("/decision")
-async def get_decision(symbol: str, current_user: str = Depends(get_current_user)):
+# Endpoint pour prédiction et décision
+@app.get("/predict_and_decide")
+async def predict_and_decide(symbol: str, interval: str = "15m", credentials: HTTPBasicCredentials = Depends(security)):
     """
-    Prend une décision (Buy, Hold, Sell) basée sur les données en temps réel (WebSocket) par rapport à la dernière bougie.
+    Prédit le prix de clôture pour la prochaine période et prend une décision (Buy, Sell ou Hold).
+
+    Requête CURL pour BTCUSDT avec intervalle par défaut :
+    curl -X 'GET' \
+        'http://localhost:8000/predict_and_decide?symbol=BTCUSDT' \
+        -H 'accept: application/json' \
+        -u user:password
+
+    Requête CURL pour ETHUSDT avec intervalle 15m :
+    curl -X 'GET' \
+        'http://localhost:8000/predict_and_decide?symbol=ETHUSDT&interval=15m' \
+        -H 'accept: application/json' \
+        -u user:password
     """
+    current_user = get_current_user(credentials)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
     try:
-        stream_data = get_stream_data(symbol)
-        if not stream_data:
-            raise HTTPException(status_code=500, detail="Impossible de récupérer les données en temps réel.")
-
-        # Comparaison du prix actuel avec le prix de clôture de la bougie précédente
-        current_price = float(stream_data['close_price'])
-        previous_price = float(stream_data['previous_close_price'])
-
-        if current_price > previous_price:
-            decision = "Buy"
-        elif current_price < previous_price:
-            decision = "Sell"
-        else:
-            decision = "Hold"
-
+        prediction_data = make_prediction_and_decision(symbol, interval)
+        
+        # Réorganiser l'ordre du retour
         return {
-            "user": current_user,
             "symbol": symbol,
-            "current_price": current_price,
-            "previous_price": previous_price,
-            "decision": decision
+            "interval": prediction_data['interval'],
+            "actual_time": prediction_data['actual_time'],
+            "next_time": prediction_data['next_time'],
+            "actual_price": prediction_data['actual_price'],
+            "predicted_close_price": prediction_data['predicted_close_price'],
+            "decision": prediction_data['decision']
         }
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Model for {symbol} with interval {interval} not found. Only 15m models are guaranteed."
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la prise de décision : {str(e)}")
-
+        raise HTTPException(status_code=500, detail=f"Prediction and decision error: {str(e)}")

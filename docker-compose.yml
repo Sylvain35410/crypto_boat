@@ -94,6 +94,8 @@ services:
       - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
       - PYTHONPATH=/opt/airflow/
     env_file: ".env"
+    ports:
+      - "8050:8050"
     volumes:
       - ./logs:/opt/airflow/logs
       - ./model:/opt/airflow/model
@@ -110,15 +112,9 @@ services:
       - DATABASE_URL=postgresql://airflow:airflow@postgres/cryptoboat_db
     depends_on:
       - postgres
+    volumes:
+      - ./model:/model
     restart: always
-
-  # train-model:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile_train_model
-  #   volumes:
-  #     - ./model:/train/model
-  #   restart: always
 
 volumes:
   postgres-db-volume:
