@@ -31,17 +31,18 @@ with DAG(
             Variable.set(key='train_model_interval', value='15m', description='Interval for train_model DAG')
             interval = '15m'
 
-        start_date = Variable.get(key='train_model_date_start', default_var=None)
-        if start_date is None:
-            Variable.set(key='train_model_date_start', value='2017-09-01', description='Start date for train_model DAG')
-            start_date = '2017-09-01'
+        # start_date = Variable.get(key='train_model_date_start', default_var=None)
+        # if start_date is None:
+        #     Variable.set(key='train_model_date_start', value='2017-09-01', description='Start date for train_model DAG')
+        #     start_date = '2017-09-01'
 
-        end_date = Variable.get(key='train_model_date_end', default_var=None)
-        if end_date is None:
-            Variable.set(key='train_model_date_end', value='2017-10-06', description='End date for train_model DAG')
-            end_date = '2017-10-06'
+        # end_date = Variable.get(key='train_model_date_end', default_var=None)
+        # if end_date is None:
+        #     Variable.set(key='train_model_date_end', value='2017-10-06', description='End date for train_model DAG')
+        #     end_date = '2017-10-06'
 
-        training(symbol, interval, start_date, end_date)
+        # training(symbol, interval, start_date, end_date)
+        training(symbol, interval)
 
     train_btc_model_task = PythonOperator(
         task_id='train_btc_model',

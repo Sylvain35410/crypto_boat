@@ -8,7 +8,7 @@ from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV, train_test_split
-from scripts.lib_sql import get_historical_data
+from scripts.lib_sql import get_historical_data, get_id_interval, get_id_crypto_characteristics
 
 # Configuration de logging :
 
@@ -38,7 +38,9 @@ def load_training_data(symbol, interval="15m", lag_count=2):
     logging.info(f"Loading historical data for {symbol} with interval {interval}.")  
     try:
         # Utilisation de la fonction fusionnée get_historical_data
-        feats, target = get_historical_data(symbol, interval, lags=True, limit=lag_count)
+        id_interval   = get_id_interval(interval)
+        id_symbol     = get_id_crypto_characteristics(symbol)
+        feats, target = get_historical_data(id_symbol, id_interval, lags=True, limit=lag_count)
     except Exception as e:
         raise RuntimeError(f"Error loading historical data: {str(e)}")
 
