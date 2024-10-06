@@ -112,14 +112,6 @@ services:
       - postgres
     restart: always
 
-  # train-model:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile_train_model
-  #   volumes:
-  #     - ./model:/train/model
-  #   restart: always
-
 volumes:
   postgres-db-volume:
   redis-volume:
