@@ -6,7 +6,7 @@ from scripts.lib_sql import (
     check_database_health, add_user_to_db, 
     delete_user_from_db, get_current_user
 )
-from app.tools_app import make_prediction_and_decision
+from tools_app import make_prediction_and_decision
 
 security = HTTPBasic()
 

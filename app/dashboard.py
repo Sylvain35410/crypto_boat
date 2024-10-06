@@ -6,7 +6,7 @@ import psycopg2
 import pandas as pd
 import os
 import requests
-from app.tools_app import get_current_stream_price
+from tools_app import get_current_stream_price
 
 
 # Fonction pour se connecter à la base de données PostgreSQL et exécuter une requête

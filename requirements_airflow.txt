@@ -25,3 +25,11 @@ numpy==1.24.2
 
 # Bibliothèque de machine learning
 scikit-learn==1.2.2
+
+# Framework Web & FastAPI pour créer l'API
+fastapi==0.103.0
+uvicorn==0.18.3
+
+# Bibliothèques pour les graphiques
+plotly==5.10.0
+dash==2.7.0

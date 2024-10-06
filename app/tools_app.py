@@ -1,7 +1,7 @@
 import os
 import pickle
 from datetime import datetime
-from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data
+from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data, get_id_interval, get_id_crypto_characteristics
 
 # Charger le modèle pré-entraîné
 def load_model(symbol, interval):
@@ -16,7 +16,7 @@ def load_model(symbol, interval):
     - Le modèle RandomForestRegressor chargé à partir du fichier pickle.
     """
     try:
-        model_path = f'/opt/airflow/model/{symbol}_{interval}.pkl'  # Chemin du modèle
+        model_path = f'/model/{symbol}_{interval}.pkl'  # Chemin du modèle
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model for {symbol} with interval {interval} not found.")
         with open(model_path, 'rb') as f:
@@ -71,7 +71,9 @@ def make_prediction_and_decision(symbol, interval="15m"):
     next_time = stream_data["next_time"].iloc[0]
 
     # Récupérer les données historiques avec des lags
-    feats, _ = get_historical_data(symbol, interval, lags=True)
+    id_interval    = get_id_interval(interval)
+    id_symbol      = get_id_crypto_characteristics(symbol)
+    feats, _ = get_historical_data(id_symbol, id_interval, lags=True)
 
     # Charger le modèle entraîné
     model = load_model(symbol, interval)
@@ -95,3 +97,64 @@ def make_prediction_and_decision(symbol, interval="15m"):
         "predicted_close_price": round(next_close_price.item(), 2),
         "decision": decision
     }
+
+# Fonction pour récupérer le prix de clôture du stream et le prochain intervalle de temps (par défaut 15 minutes)
+def get_current_stream_price(symbol, interval='15m'):
+    """
+    Fonction pour récupérer le dernier prix de clôture de la cryptomonnaie en temps réel ainsi que le prochain intervalle de temps.
+
+    Arguments :
+    - `symbol` (str) : Le symbole de la cryptomonnaie (par exemple 'BTC').
+
+    Description :
+    - Récupère le dernier prix de clôture et calcule l'heure du prochain intervalle de temps basé sur le dernier `event_time`.
+    - Utilise les données en temps réel stockées dans la table `stream_crypto_data`.
+
+    Retour :
+    - Un DataFrame Pandas avec le prix de clôture et le prochain intervalle de temps.
+    """
+    # try:
+    #     connection = __connect_db()
+    #     cursor = connection.cursor()
+
+    #     # Requête SQL pour récupérer le prix de clôture et le prochain intervalle de temps
+    #     query = '''
+    #         SELECT 
+    #             close_price,
+    #             to_char(to_timestamp(event_time / 1000) + INTERVAL %s, 'YYYY-MM-DD HH24:MI:00') AS next_time
+    #         FROM stream_crypto_data
+    #         WHERE id_crypto_characteristics = (
+    #             SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = %s
+    #         )
+    #         ORDER BY event_time DESC
+    #         LIMIT 1
+    #     '''
+    #     # Conversion de l'intervalle en format PostgreSQL (par exemple '15 minutes')
+    #     interval_mapping = {
+    #         '15m': '15 minutes',
+    #         '1h': '1 hour',
+    #         '4h': '4 hours',
+    #         '1d': '1 day',
+    #         '1w': '1 week',
+    #         '1M': '1 month'
+    #     }
+    #     pg_interval = interval_mapping.get(interval, '15 minutes')  # Utiliser 15 minutes par défaut
+
+    #     # Exécuter la requête
+    #     cursor.execute(query, (pg_interval, symbol))
+    #     data = cursor.fetchall()
+    #     connection.commit()
+
+    #     # Retourner les données
+    #     if data:
+    #         return pd.DataFrame(data, columns=['close_price', 'next_time'])
+    #     else:
+    #         raise Exception(f"No stream data found for symbol {symbol}")
+
+    # except Exception as e:
+    #     print(f"get_stream_price_and_next_time: unable to retrieve data. Error: {e}")
+    #     raise
+
+    # finally:
+    #     if connection is not None:
+    #         connection.close()

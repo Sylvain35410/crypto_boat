@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && apt-get clean
 
+# Revenir à l'utilisateur airflow pour les dernières configurations
+USER airflow
+
 # Copier le fichier requirements_airflow.txt
 COPY ./requirements_airflow.txt /opt/airflow/requirements.txt
 
@@ -18,11 +21,7 @@ COPY ./requirements_airflow.txt /opt/airflow/requirements.txt
 RUN pip install --no-cache-dir -r /opt/airflow/requirements.txt
 
 # Copier les DAGs, scripts, et SQL dans Airflow
+COPY ./app /opt/airflow/app
 COPY ./dags /opt/airflow/dags
 COPY ./scripts /opt/airflow/scripts
 COPY ./sql /opt/airflow/sql
-COPY ./model /opt/airflow/model
-
-# Revenir à l'utilisateur airflow pour les dernières configurations
-USER airflow
-

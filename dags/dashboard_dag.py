@@ -15,7 +15,7 @@ default_args = {
 }
 
 # Chemin du fichier dashboard.py
-DASHBOARD_SCRIPT_PATH = '/opt/airflow/app/dashboard.py'  # à vérifier Sylvain ! 
+DASHBOARD_SCRIPT_PATH = '/opt/airflow/app/dashboard.py'
 
 # Fonction Python pour démarrer le serveur Dash
 def start_dash_server():
@@ -36,7 +36,8 @@ with DAG(
         # Tâche Bash pour lancer le serveur Dash avec Python
         run_dashboard = BashOperator(
             task_id='run_dashboard_task',
-            bash_command=f'python3 {DASHBOARD_SCRIPT_PATH}',  # Lancer le fichier dashboard.py
+            # Lancer le fichier dashboard.py
+            bash_command=f'python3 {DASHBOARD_SCRIPT_PATH}',
             do_xcom_push=False
         )
 
