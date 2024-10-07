@@ -9,13 +9,15 @@ from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import MinMaxScaler
+# from sklearn.preprocessing import StandardScaler
 from scripts.lib_sql import get_historical_data, get_id_interval, get_id_crypto_characteristics
 
 # Configuration de logging :
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Récupération des données de la DB: 
-def load_training_data(symbol, interval="15m", lag_count=2, limit=30000):
+def load_training_data(symbol, interval="15m", lag_count=2, limit=300000):
     """
     Fonction pour charger les données d'entraînement depuis la base de données.
 
@@ -64,6 +66,15 @@ def prepare_data(feats, target):
 
     # Séparation des données en jeux d'entraînement et de test
     X_train, X_test, y_train, y_test = train_test_split(feats, target, test_size=0.2, random_state=42)
+
+    # Normalisation entre 0 et 1 lorsque les variables ne suivent pas une distribution normale.
+    # Standardisation (Normalisation Z-Score) lorsque la distribution de la variable suit une loi normale.
+    # Standardisation des variables numériques à l'aide de StandardScaler en estimant les paramètres sur le jeu d'entraînement et en l'appliquant sur le jeu d'entraînement et de test.
+    # sc = StandardScaler()
+    # Normalisation des variables numériques à l'aide de MinMaxScaler en estimant les paramètres sur le jeu d'entraînement et en l'appliquant sur le jeu d'entraînement et de test.
+    sc = MinMaxScaler()
+    X_train = sc.fit_transform(X_train)
+    X_test  = sc.transform(X_test)
 
     return X_train, X_test, y_train, y_test
 
@@ -200,3 +211,8 @@ def training(symbol, interval="15m", lag_count=2):
     save_model(symbol, interval, model)
 
     logging.info(f"Training completed for {symbol} with interval {interval}.")  
+
+if __name__ == "__main__":
+    symbol = "BTCUSDT"
+    interval = "15m"
+    training(symbol, interval)
