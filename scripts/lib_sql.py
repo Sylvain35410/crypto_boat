@@ -258,7 +258,7 @@ def get_last_open_time(id_symbol, id_interval):
     return __get_query_to_one_value(query, (id_symbol, id_interval))
 
 # Fonction fusionnée pour récupérer les données historiques
-def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, lags=False, limit=300000):
+def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, lags=False, lag_count=2, limit=300000):
     """
     Fonction pour récupérer les données historiques de la cryptomonnaie avec ou sans décalages (lags).
 
@@ -268,6 +268,7 @@ def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, 
     - `start_time` (int) : Le timestamp de début de la période (facultatif).
     - `end_time` (int) : Le timestamp de fin de la période (facultatif).
     - `lags` (bool) : Si True, récupère les données avec des colonnes de décalage (lags), sinon sans.
+    - `lag_count` (int) : Nombre de décalages (lags) à inclure (défaut = 2).
     - `limit` (int) : Limite du nombre de lignes à récupérer (par défaut à 300000).
 
     Description :
@@ -308,7 +309,6 @@ def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, 
             lag_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume',
                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume',
                            'taker_buy_quote_asset_volume']
-            lag_count = 2  # Nombre de décalages
 
             # Ajout des colonnes de décalage
             for col in lag_columns:

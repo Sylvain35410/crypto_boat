@@ -1,7 +1,7 @@
 import os
 import pickle
 from datetime import datetime
-from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data, get_id_interval, get_id_crypto_characteristics
+from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data, get_id_interval, get_id_crypto_characteristics, __connect_db
 
 # Charger le modèle pré-entraîné
 def load_model(symbol, interval):
@@ -119,8 +119,7 @@ def get_current_stream_price(symbol):
 
         # Requête SQL pour récupérer le prix de clôture et le prochain intervalle de temps
         query = '''
-            SELECT 
-                close_price,
+            SELECT close_price
             FROM stream_crypto_data
             WHERE id_crypto_characteristics = (
                 SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = %s
@@ -130,7 +129,7 @@ def get_current_stream_price(symbol):
         '''
 
         # Exécuter la requête
-        cursor.execute(query, (symbol))
+        cursor.execute(query, (symbol,))
         current_price = cursor.fetchone()
         connection.commit()
 

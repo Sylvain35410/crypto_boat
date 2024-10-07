@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import pickle
+import pytz
 import time
 from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
@@ -11,15 +12,10 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from scripts.lib_sql import get_historical_data, get_id_interval, get_id_crypto_characteristics
 
 # Configuration de logging :
-
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 # Récupération des données de la DB: 
-
-
-def load_training_data(symbol, interval="15m", lag_count=2):
+def load_training_data(symbol, interval="15m", lag_count=2, limit=30000):
     """
     Fonction pour charger les données d'entraînement depuis la base de données.
 
@@ -40,19 +36,16 @@ def load_training_data(symbol, interval="15m", lag_count=2):
         # Utilisation de la fonction fusionnée get_historical_data
         id_interval   = get_id_interval(interval)
         id_symbol     = get_id_crypto_characteristics(symbol)
-        feats, target = get_historical_data(id_symbol, id_interval, lags=True, limit=lag_count)
+        feats, target = get_historical_data(id_symbol, id_interval, lags=True, lag_count=lag_count, limit=limit)
     except Exception as e:
         raise RuntimeError(f"Error loading historical data: {str(e)}")
 
     if feats.shape[0] == 0:
-        raise Exception(f"No data found for {symbol} with interval {interval}.")  
+        raise Exception(f"No data found for {symbol} with interval {interval}.")
 
     return feats, target
 
-
 # Préparation des données pour l'entraînement :
-
-
 def prepare_data(feats, target):
     """
     Préparation des données pour l'entraînement et le test.
@@ -74,10 +67,7 @@ def prepare_data(feats, target):
 
     return X_train, X_test, y_train, y_test
 
-
 # Recherche des hyperparamètres : 
-
-
 def perform_grid_search(X_train, y_train):
     """
     Recherche des meilleurs hyperparamètres pour le modèle RandomForestRegressor.
@@ -95,13 +85,13 @@ def perform_grid_search(X_train, y_train):
     logging.info("Searching for best hyperparameters for RandomForest.")  
 
     param_grid = {
-        'n_estimators': [100, 200, 500],
-        'max_depth': [None, 10, 20],
+        'n_estimators': [100, 200],
+        'max_depth': [None, 20],
         'min_samples_split': [2, 5],
         'min_samples_leaf': [1, 2]
     }
     rf_model = RandomForestRegressor(random_state=42)
-    grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1, verbose=2)
+    grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=2, scoring='neg_mean_squared_error', n_jobs=-1, verbose=2)
     grid_search.fit(X_train, y_train)
     
     logging.info(f"Best model parameters: {grid_search.best_params_}")
@@ -109,10 +99,7 @@ def perform_grid_search(X_train, y_train):
     
     return grid_search.best_estimator_
 
-
 # Entraînement du modèle et calcul des métriques: 
-
-
 def train_model(X_train, X_test, y_train, y_test):
     """
     Entraînement du modèle RandomForestRegressor et calcul des métriques de performance.
@@ -146,9 +133,7 @@ def train_model(X_train, X_test, y_train, y_test):
 
     return best_model
 
-
 # Sauvegarde du modèle :
-
 def save_model(symbol, interval, model):
     """
     Sauvegarde le modèle entraîné sous forme de fichier pickle.
@@ -175,9 +160,7 @@ def save_model(symbol, interval, model):
     except Exception as e:
         logging.error(f"Error saving the model: {e}")  
 
-
 # Fonction principale d'entraînement:
-
 def training(symbol, interval="15m", lag_count=2):
     """
     Fonction principale pour l'entraînement du modèle.

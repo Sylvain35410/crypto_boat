@@ -1,11 +1,14 @@
 import dash
+from datetime import datetime
 from dash import dcc, html
 from dash.dependencies import Input, Output
+import os
+import pandas as pd
 import plotly.graph_objs as go
 import psycopg2
-import pandas as pd
-import os
+import pytz
 import requests
+from requests.auth import HTTPBasicAuth
 from tools_app import get_current_stream_price
 
 
@@ -21,9 +24,7 @@ def get_data_from_db(query):
     - pd.DataFrame: Les résultats de la requête sous forme de DataFrame Pandas.
     """
     DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://airflow:airflow@postgres/crypto_db')
-    conn = psycopg2.connect(DATABASE_URL)
-    df = pd.read_sql(query, conn)
-    conn.close()
+    df = pd.read_sql(query, DATABASE_URL)
     return df
 
 
@@ -39,12 +40,16 @@ def get_real_data(symbol, interval):
     Retour:
     - pd.DataFrame: Les données historiques sous forme de DataFrame.
     """
+
+    # Récupère les données des 30 derniers jours : 30*24*60*60*1000 = 2592000000
+    now_time = int(datetime.now().replace(tzinfo=pytz.UTC).timestamp() * 1000) - 2592000000 
+
     query = f"""
     SELECT open_time, open_price, high_price, low_price, close_price, volume
     FROM historical_crypto_data
     WHERE id_crypto_characteristics = (SELECT id_crypto_characteristics FROM crypto_characteristics WHERE symbol = '{symbol}')
     AND id_interval = (SELECT id_interval FROM intervals WHERE intervals = '{interval}')
-    AND open_time >= NOW() - INTERVAL '30 days'  -- Récupère les données des 30 derniers jours
+    AND open_time >= {now_time}
     ORDER BY open_time DESC
     """
     return get_data_from_db(query)
@@ -80,8 +85,8 @@ def get_predicted_data(symbol):
     Retour:
     - dict: Les résultats de la prédiction sous forme de dictionnaire.
     """
-    API_BASE_URL = 'http://localhost:8000'
-    response = requests.get(f'{API_BASE_URL}/predict', params={'symbol': symbol})
+    API_BASE_URL = 'http://api:8000'
+    response = requests.get(f'{API_BASE_URL}/predict_and_decide', params={'symbol': symbol}, auth = HTTPBasicAuth('admin', 'adminopa2024'))
     return response.json()
 
 
@@ -177,7 +182,7 @@ def build_dashboard():
 
         # Graphique des prédictions
         predicted_trace = go.Scatter(
-            x=[predicted_data['timestamp']],
+            x=[predicted_data['next_time']],
             y=[predicted_data['predicted_close_price']],
             mode='lines',
             name='Predicted Data'
