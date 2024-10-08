@@ -21,7 +21,7 @@ DASHBOARD_SCRIPT_PATH = '/opt/airflow/app/dashboard.py'  # à vérifier Sylvain 
 def start_dash_server():
     os.system(f'python3 {DASHBOARD_SCRIPT_PATH}')
 
-# Création du DAG
+# Création du DA
 with DAG(
     dag_id='dashboard_dag',
     default_args=default_args,
