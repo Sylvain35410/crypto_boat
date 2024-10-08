@@ -112,14 +112,16 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 ## Configuration
 
 Les paramètres de configuration, comme les intervalles de téléchargement des données et les modèles à entraîner, sont ajustables dans les variables Airflow.
-        Nom de la variable                  Description                               Valeur
-    crypto_data_ingestion_date_end      End date for crypto_data_ingestion DAG      2024-10-30
-    crypto_data_ingestion_date_start    Start date for crypto_data_ingestion DAG    2020-04-01
-    crypto_data_ingestion_interval      Interval for crypto_data_ingestion DAG          15m
-    train_model_date_end                End date for train_model DAG                2024-10-30
-    train_model_date_start              Start date for train_model DAG              2020-04-01
-    train_model_interval                Interval for train_model DAG                    15m
-    websocket_stream_interval           Interval for websocket_stream DAG               5s
+
+| Nom de la variable                  | Description                               | Valeur         |
+|-------------------------------------|-------------------------------------------|----------------|
+| `crypto_data_ingestion_date_end`    | End date for crypto_data_ingestion DAG     | 2024-10-30     |
+| `crypto_data_ingestion_date_start`  | Start date for crypto_data_ingestion DAG   | 2020-04-01     |
+| `crypto_data_ingestion_interval`    | Interval for crypto_data_ingestion DAG     | 15m            |
+| `train_model_date_end`              | End date for train_model DAG               | 2024-10-30     |
+| `train_model_date_start`            | Start date for train_model DAG             | 2020-04-01     |
+| `train_model_interval`              | Interval for train_model DAG               | 15m            |
+| `websocket_stream_interval`         | Interval for websocket_stream DAG          | 5s             |
 
 ## Auteur
 
