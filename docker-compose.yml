@@ -100,6 +100,15 @@ services:
       - ./logs:/opt/airflow/logs
       - ./model:/opt/airflow/model
       - ./plugins:/opt/airflow/plugins
+      # - type: bind
+      #   source: ./app
+      #   target: /opt/airflow/app
+      # - type: bind
+      #   source: ./scripts
+      #   target: /opt/airflow/scripts
+      # - type: bind
+      #   source: ./sql
+      #   target: /opt/airflow/sql
     restart: always
 
   api:
