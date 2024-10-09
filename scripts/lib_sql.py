@@ -291,7 +291,7 @@ def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, 
                 FROM historical_crypto_data 
                 WHERE id_crypto_characteristics = %s
                 AND id_interval = %s
-                ORDER BY open_time ASC
+                ORDER BY open_time DESC
                 LIMIT %s
             '''
             cursor.execute(query, (id_symbol, id_interval, limit))

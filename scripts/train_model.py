@@ -95,11 +95,17 @@ def perform_grid_search(X_train, y_train):
     """
     logging.info("Searching for best hyperparameters for RandomForest.")  
 
+    # param_grid = {
+    #     'n_estimators': [100, 200],
+    #     'max_depth': [None, 20],
+    #     'min_samples_split': [2, 5],
+    #     'min_samples_leaf': [1, 2]
+    # }
     param_grid = {
-        'n_estimators': [100, 200],
-        'max_depth': [None, 20],
-        'min_samples_split': [2, 5],
-        'min_samples_leaf': [1, 2]
+        'n_estimators': [200],
+        'max_depth': [None],
+        'min_samples_split': [5],
+        'min_samples_leaf': [2]
     }
     rf_model = RandomForestRegressor(random_state=42)
     grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=2, scoring='neg_mean_squared_error', n_jobs=-1, verbose=2)
@@ -191,15 +197,16 @@ def training(symbol, interval="15m", lag_count=2):
     logging.info(f"Starting training for {symbol} with interval {interval}.")  
 
     # Vérification si un modèle plus récent existe
-    model_path = f"/opt/airflow/model/{symbol}_{interval}.pkl"
-    if os.path.exists(model_path):
-        model_age_days = (datetime.now() - datetime.fromtimestamp(os.path.getmtime(model_path))).days
-        if model_age_days <= 30:
-            logging.info(f"Using existing model for {symbol} ({interval}), age: {model_age_days} days.")  
-            return
+    # model_path = f"/opt/airflow/model/{symbol}_{interval}.pkl"
+    # if os.path.exists(model_path):
+    #     model_age_days = (datetime.now() - datetime.fromtimestamp(os.path.getmtime(model_path))).days
+    #     if model_age_days <= 30:
+    #         logging.info(f"Using existing model for {symbol} ({interval}), age: {model_age_days} days.")  
+    #         return
 
     # Chargement des données historiques
-    feats, target = load_training_data(symbol, interval, lag_count)
+    # Limit à 1000 pour la démo
+    feats, target = load_training_data(symbol, interval, lag_count, limit=100000)
 
     # Préparation des données pour l'entraînement et de test
     X_train, X_test, y_train, y_test = prepare_data(feats, target)
