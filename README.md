@@ -129,8 +129,8 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 | `websocket_stream_interval`         | Interval for websocket_stream DAG          | 5s             |
 
 ## grafana
-- login : `admin`
-- password : `adminopa2024`
+. login : `admin`
+. password : `adminopa2024`
 
 ## Auteur
 
