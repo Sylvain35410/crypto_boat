@@ -146,3 +146,37 @@ def get_current_stream_price(symbol):
     finally:
         if connection is not None:
             connection.close()
+            
+            
+# Fonction pour récupérer les caractéristiques crypto
+def get_crypto_characteristics(symbol):
+    """
+    Récupère les caractéristiques d'une cryptomonnaie (nom, symbole, market_cap, circulating_supply, max_supply).
+    
+    Arguments:
+    - symbol (str): Le symbole de la cryptomonnaie (ex: 'BTCUSDT').
+    
+    Retour:
+    - dict: Un dictionnaire contenant les caractéristiques de la cryptomonnaie.
+    
+    Lève:
+    - HTTPException: Si une erreur de base de données se produit ou si la cryptomonnaie n'est pas trouvée.
+    """
+    try:
+        query = f"""
+        SELECT name, symbol, market_cap, circulating_supply, max_supply
+        FROM crypto_characteristics
+        WHERE symbol = '{symbol}'
+        """
+        characteristics_df = get_data_from_db(query)
+        
+        if characteristics_df.empty:
+            raise ValueError(f"Crypto characteristics not found for symbol: {symbol}")
+
+        return characteristics_df.iloc[0].to_dict()  # Retourne les données sous forme de dictionnaire
+
+    except Exception as e:
+        # Gérer les erreurs de base de données ou autres exceptions
+        print(f"Error retrieving crypto characteristics: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving characteristics for {symbol}: {str(e)}")
+
