@@ -25,7 +25,7 @@ COPY ./app /app
 COPY ./scripts /app/scripts
 
 # Installation du node-exporter
-COPY ./monitoring/node_exporter /bin/
+COPY ./monitoring/bin/node_exporter /bin/
 RUN chmod 755 /bin/node_exporter
 
 # Exposer le port de l'application et du node-exporter

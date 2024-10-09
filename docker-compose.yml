@@ -188,6 +188,6 @@ services:
 volumes:
   postgres-db-volume:
   redis-volume:
-  model:
+  # model:
   prometheus-data:
   grafana-data:
