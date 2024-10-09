@@ -92,15 +92,16 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 
 
 8. Le monitoring est accessible aux adresses :
+
     Prometheus
     http://localhost:9090
     Alertmanager
     http://localhost:9093
 
-        Grafana : http://localhost:3000
+    Grafana : http://localhost:3000
 
-        Node exporter
-        http://localhost:9100
+    Node exporter
+    http://localhost:9100
 
 ## Fonctionnement
 
@@ -133,7 +134,7 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 
 login : `admin`
 
-    password : `adminopa2024`
+password : `adminopa2024`
 
 ## Auteur
 
