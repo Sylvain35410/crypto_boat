@@ -90,18 +90,12 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 7. L'API FastAPI est accessible à l'adresse :
     http://localhost:8000
 
-
 8. Le monitoring est accessible aux adresses :
 
-    Prometheus
-    http://localhost:9090
-    Alertmanager
-    http://localhost:9093
-
-    Grafana : http://localhost:3000
-
-    Node exporter
-    http://localhost:9100
+| Prometheus    | http://localhost:9090 |
+| Alertmanager  | http://localhost:9093 |
+| Grafana       | http://localhost:3000 |
+| Node exporter | http://localhost:9100 |
 
 ## Fonctionnement
 
