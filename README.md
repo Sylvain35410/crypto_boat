@@ -92,6 +92,7 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 
 8. Le monitoring est accessible aux adresses :
 
+|---------------|-----------------------|
 | Prometheus    | http://localhost:9090 |
 | Alertmanager  | http://localhost:9093 |
 | Grafana       | http://localhost:3000 |
@@ -114,8 +115,8 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 
 Les paramètres de configuration, comme les intervalles de téléchargement des données et les modèles à entraîner, sont ajustables dans les variables Airflow.
 
-| Nom de la variable                  | Description                               | Valeur         |
-|-------------------------------------|-------------------------------------------|----------------|
+| Nom de la variable                  | Description                                | Valeur         |
+|-------------------------------------|--------------------------------------------|----------------|
 | `crypto_data_ingestion_date_end`    | End date for crypto_data_ingestion DAG     | 2024-10-30     |
 | `crypto_data_ingestion_date_start`  | Start date for crypto_data_ingestion DAG   | 2020-04-01     |
 | `crypto_data_ingestion_interval`    | Interval for crypto_data_ingestion DAG     | 15m            |
