@@ -82,19 +82,24 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 ```
 
 5. Accédez à l'interface Airflow pour vérifier les DAGs : 
-   ```
-   http://localhost:8080
-   ```
+    http://localhost:8080
 
 6. Le tableau de bord Dash est accessible à l'adresse :
-   ```
-   http://localhost:8050
-   ```
+    http://localhost:8050
 
 7. L'API FastAPI est accessible à l'adresse :
-   ```
-   http://localhost:8000
-   ```
+    http://localhost:8000
+
+
+8. Le monitoring est accessible aux adresses :
+    # Prometheus
+    http://localhost:9090
+    # Alertmanager
+    http://localhost:9093
+    # Grafana
+    http://localhost:3000
+    # Node exporter
+    http://localhost:9100
 
 ## Fonctionnement
 
@@ -122,6 +127,10 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 | `train_model_date_start`            | Start date for train_model DAG             | 2020-04-01     |
 | `train_model_interval`              | Interval for train_model DAG               | 15m            |
 | `websocket_stream_interval`         | Interval for websocket_stream DAG          | 5s             |
+
+## grafana
+- login : `admin`
+- password : `adminopa2024`
 
 ## Auteur
 
