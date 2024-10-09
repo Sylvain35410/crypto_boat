@@ -31,6 +31,26 @@ CBot/
 │   └── Dockerfile_api                   # Dockerfile pour l'API FastAPI
 ├── logs/                                # Répertoire pour stocker les logs d'Airflow
 ├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
+├── monitoring/
+|   ├── alertmanager/
+|   |   ├── alert.rules/alerts.rules.yml
+|   |   ├── alertmanager.yml
+|   |   └── templates/default.tmpl
+|   ├── bin/
+|   |   ├── my_entrypoint.sh
+|   |   ├── node_exporter
+|   |   └── statsd_exporter
+|   ├── blackbox/blackbox.yml
+|   ├── grafana/
+|   |   ├── dashboards/
+|   |   |   ├── airflow_grafana_dashboard.json
+|   |   |   ├── alertmanager.json
+|   |   |   ├── blackbox-exporter.json
+|   |   |   └── monitoring-machine.json
+|   |   ├── dashboards.yml
+|   |   ├── datasource.yml
+|   |   └── grafana.ini
+|   └── prometheus/prometheus.yml
 ├── plugins/                             # Plugins Airflow (si nécessaires)
 ├── scripts/                             # Scripts pour la récupération et le stockage des données
 │   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
@@ -44,31 +64,7 @@ CBot/
 ├── docker-compose.yml                   # Fichier de configuration Docker Compose
 ├── README.md                            # Documentation du projet
 ├── requirements_airflow.txt             # Dépendances pour Airflow
-├── requirements_api.txt                 # Dépendances pour l'API
-└── monitoring/
-    ├── alertmanager/
-    |   ├── alert.rules/
-    |   |   └── alerts.rules.yml
-    |   ├── alertmanager.yml
-    |   └── templates/
-    |       └── default.tmpl
-    ├── bin/
-    |   ├── my_entrypoint.sh
-    |   ├── node_exporter
-    |   └── statsd_exporter
-    ├── blackbox/
-    |   └── blackbox.yml
-    ├── grafana/
-    |   ├── dashboards/
-    |   |   ├── airflow_grafana_dashboard.json
-    |   |   ├── alertmanager.json
-    |   |   ├── blackbox-exporter.json
-    |   |   └── monitoring-machine.json
-    |   ├── dashboards.yml
-    |   ├── datasource.yml
-    |   └── grafana.ini
-    └── prometheus/
-        └── prometheus.yml
+└── requirements_api.txt                 # Dépendances pour l'API
 
 ```
 
