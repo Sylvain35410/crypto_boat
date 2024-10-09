@@ -24,8 +24,12 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY ./app /app
 COPY ./scripts /app/scripts
 
-# Exposer le port de l'application
-EXPOSE 8000
+# Installation du node-exporter
+COPY ./monitoring/node_exporter /bin/
+RUN chmod 755 /bin/node_exporter
 
-# Lancer l'application FastAPI
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Exposer le port de l'application et du node-exporter
+EXPOSE 8000 9100
+
+# Lancer l'application FastAPI et le node-exporter
+CMD /bin/node_exporter --web.listen-address=:9100 & uvicorn app:app --host 0.0.0.0 --port 8000
