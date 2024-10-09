@@ -1,6 +1,6 @@
 # CBot
 
-![CBot Workflow](./Cbot.gif)
+![CBot Workflow](./CBot.gif)
 
 ## Description
 CBot est un projet de prédiction et de surveillance en temps réel des cryptomonnaies, principalement pour les paires BTC/USDT et ETH/USDT. Le projet télécharge et analyse les données historiques et en temps réel depuis Binance et CoinGecko, entraîne des modèles de prédiction, et prend des décisions en fonction de l'évolution des prix. CBot utilise Airflow pour orchestrer les tâches, FastAPI pour l'API REST, et Dash pour afficher les données sur un tableau de bord interactif.
