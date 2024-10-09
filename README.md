@@ -12,6 +12,7 @@ CBot est un projet de prédiction et de surveillance en temps réel des cryptomo
 4. **Tableau de bord interactif** : Le tableau de bord Dash affiche les données des 30 derniers jours, les volumes échangés, les prédictions et les caractéristiques des cryptomonnaies.
 5. **Authentification utilisateur** : Les utilisateurs peuvent être ajoutés, supprimés et authentifiés via l'API FastAPI.
 6. **Orchestration avec Airflow** : Toutes les tâches sont orchestrées par Airflow : ingestion des données, mise à jour, entraînement de modèles et prédictions.
+7. **Monitoring avec Grafana et Prometheus** : La supervision est réalisée avec Grafana et Prometheus.
 
 ## Structure du Projet
 
@@ -31,26 +32,6 @@ CBot/
 │   └── Dockerfile_api                   # Dockerfile pour l'API FastAPI
 ├── logs/                                # Répertoire pour stocker les logs d'Airflow
 ├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
-├── monitoring/
-|   ├── alertmanager/
-|   |   ├── alert.rules/alerts.rules.yml
-|   |   ├── alertmanager.yml
-|   |   └── templates/default.tmpl
-|   ├── bin/
-|   |   ├── my_entrypoint.sh
-|   |   ├── node_exporter
-|   |   └── statsd_exporter
-|   ├── blackbox/blackbox.yml
-|   ├── grafana/
-|   |   ├── dashboards/
-|   |   |   ├── airflow_grafana_dashboard.json
-|   |   |   ├── alertmanager.json
-|   |   |   ├── blackbox-exporter.json
-|   |   |   └── monitoring-machine.json
-|   |   ├── dashboards.yml
-|   |   ├── datasource.yml
-|   |   └── grafana.ini
-|   └── prometheus/prometheus.yml
 ├── plugins/                             # Plugins Airflow (si nécessaires)
 ├── scripts/                             # Scripts pour la récupération et le stockage des données
 │   ├── fetch_data.py                    # Téléchargement des données de CoinGecko et Binance
@@ -65,6 +46,26 @@ CBot/
 ├── README.md                            # Documentation du projet
 ├── requirements_airflow.txt             # Dépendances pour Airflow
 └── requirements_api.txt                 # Dépendances pour l'API
+└── monitoring/                          # Supervision
+    ├── alertmanager/                    # Configuration d AlertManager
+    │   ├── alert.rules/alerts.rules.yml
+    │   ├── alertmanager.yml
+    │   └── templates/default.tmpl
+    ├── bin/                             # Binaire de supervision
+    │   ├── my_entrypoint.sh
+    │   ├── node_exporter
+    │   └── statsd_exporter
+    ├── blackbox/blackbox.yml            # Supervision des URL
+    ├── grafana/                         # Configuration de Grafana
+    │   ├── dashboards/                  # Dashboards pour Grafana
+    │   │   ├── airflow_grafana_dashboard.json
+    │   │   ├── alertmanager.json
+    │   │   ├── blackbox-exporter.json
+    │   │   └── monitoring-machine.json
+    │   ├── dashboards.yml
+    │   ├── datasource.yml
+    │   └── grafana.ini
+    └── prometheus/prometheus.yml        # Configuration de Prometheus
 
 ```
 
@@ -74,6 +75,8 @@ CBot/
 - **Docker Compose** : Version 1.29.2 ou supérieure
 - **Airflow** : Version 2.8.1
 - **Python** : Version 3.8
+- **Grafana** : Version 8.5.20
+- **Prometheus** : Version 2.11.1
 
 ## Installation
 
@@ -144,7 +147,7 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 | `train_model_interval`              | Interval for train_model DAG               | 15m            |
 | `websocket_stream_interval`         | Interval for websocket_stream DAG          | 5s             |
 
-## grafana
+## Grafana
 
 login : `admin`
 
