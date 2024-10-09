@@ -47,7 +47,7 @@ CBot/
 ├── requirements_airflow.txt             # Dépendances pour Airflow
 └── requirements_api.txt                 # Dépendances pour l'API
 └── monitoring/                          # Supervision
-    ├── alertmanager/                    # Configuration d AlertManager
+    ├── alertmanager/                    # Configuration d'AlertManager
     │   ├── alert.rules/alerts.rules.yml
     │   ├── alertmanager.yml
     │   └── templates/default.tmpl
