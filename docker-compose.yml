@@ -1,6 +1,9 @@
 version: "3.7"
 
 services:
+########################################
+# Base de données
+########################################
   postgres:
     image: postgres:13
     environment:
@@ -17,6 +20,9 @@ services:
       retries: 5
     restart: always
 
+########################################
+# Airflow
+########################################
   redis:
     image: redis:latest
     volumes:
@@ -75,6 +81,7 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
+      - AIRFLOW__METRICS__STATSD_ON=true
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -111,6 +118,9 @@ services:
       #   target: /opt/airflow/sql
     restart: always
 
+########################################
+# API
+########################################
   api:
     build:
       context: .
@@ -125,7 +135,59 @@ services:
       - ./model:/model
     restart: always
 
+########################################
+# Monitoring
+########################################
+  prometheus:
+    image: prom/prometheus:v2.11.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alertmanager/alert.rules/alerts.rules.yml:/alertmanager/alert.rules/alerts.rules.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+
+  alertmanager:
+    image: prom/alertmanager:v0.18.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./monitoring/alertmanager/templates/default.tmpl:/etc/alertmanager/templates/default.tmpl
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+
+  grafana:
+    image: grafana/grafana:8.5.20
+    container_name: grafana
+    environment:
+      - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.14.0
+    container_name: blackbox_exporter
+    volumes:
+    - ./monitoring/blackbox:/config
+
 volumes:
   postgres-db-volume:
   redis-volume:
   model:
+  prometheus-data:
+  grafana-data:
