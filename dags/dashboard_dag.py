@@ -17,16 +17,13 @@ default_args = {
 # Chemin du fichier dashboard.py
 DASHBOARD_SCRIPT_PATH = '/opt/airflow/app/dashboard.py'
 
-# Fonction Python pour démarrer le serveur Dash
-def start_dash_server():
-    os.system(f'python3 {DASHBOARD_SCRIPT_PATH}')
-
 # Création du DAG
 with DAG(
     dag_id='dashboard_dag',
     default_args=default_args,
     description='DAG pour lancer le dashboard Dash',
-    schedule_interval=None,  # Exécution manuelle
+    schedule_interval='@once',  # Démarre une seule fois mais le service est continu
+    # schedule_interval=None,  # Exécution manuelle
     catchup=False
 ) as dag:
 

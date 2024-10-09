@@ -20,6 +20,7 @@ with DAG(
     default_args=default_args,
     description='Stream WebSocket data for BTC and ETH',
     schedule_interval='@once',  # Démarre une seule fois mais le service est continu
+    # schedule_interval=None,  # Exécution temporairement manuelle
     catchup=False,
 ) as dag:
 

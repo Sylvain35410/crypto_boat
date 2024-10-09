@@ -20,8 +20,8 @@ with DAG(
     'train_model_dag',
     default_args=default_args,
     description='Entraîner les modèles crypto tous les mois',
-    # schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
-    schedule_interval=None,  # Exécution temporairement manuelle
+    schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
+    # schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
     def train_crypto_model(symbol):
