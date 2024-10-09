@@ -92,6 +92,7 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 
 8. Le monitoring est accessible aux adresses :
 
+| Monitoring    | Adresses              |
 |---------------|-----------------------|
 | Prometheus    | http://localhost:9090 |
 | Alertmanager  | http://localhost:9093 |
