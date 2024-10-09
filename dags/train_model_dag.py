@@ -1,15 +1,14 @@
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python_operator import PythonOperator
-from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 # Configuration des paramètres par défaut du DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(1),
+    'start_date': datetime.now(),
     'email_on_failure': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
@@ -20,8 +19,8 @@ with DAG(
     'train_model_dag',
     default_args=default_args,
     description='Entraîner les modèles crypto tous les mois',
-    # schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
-    schedule_interval=None,  # Exécution temporairement manuelle
+    schedule_interval='0 0 1 * *',  # Exécution le 1er jour de chaque mois à minuit
+    # schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
     def train_crypto_model(symbol):

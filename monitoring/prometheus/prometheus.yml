@@ -1,0 +1,68 @@
+global:
+  scrape_interval:     15s
+  external_labels:
+    env: 'infrastructure'
+
+# spécification du serveur alertmanager
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+    scheme: http
+    timeout: 10s
+
+rule_files:
+  - "/alertmanager/alert.rules/alerts.rules.yml"
+
+scrape_configs:
+  - job_name: 'container'
+    static_configs:
+      - targets: [api:9100]
+        labels:
+          instance: 'api'
+          port: '9100'
+      - targets: [airflow-scheduler:9100]
+        labels:
+          instance: 'airflow-scheduler'
+          port: '9100'
+      - targets: [airflow-webserver:9100]
+        labels:
+          instance: 'airflow-webserver'
+          port: '9100'
+      - targets: [airflow-worker:9100]
+        labels:
+          instance: 'airflow-worker'
+          port: '9100'
+    scrape_interval: 5s
+
+  - job_name: airflow
+    static_configs:
+      - targets: [airflow-scheduler:9102]
+        labels:
+          instance: 'airflow-scheduler'
+          port: '9102'
+    scrape_interval: 5s
+
+    ### configuration de blackbox, notre probe http 
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: ([^,]*),(.*)
+        replacement: $1
+        target_label: __param_target
+      - source_labels: [__address__]
+        regex: ([^,]*),(.*)
+        replacement: $2
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+    static_configs:
+      - targets: 
+        - http://prometheus:9090,prometheus
+        - http://api:8000/healthcheck,api
+        - http://airflow-worker:8050,dashboard
+        - http://airflow-webserver:8080,airflow

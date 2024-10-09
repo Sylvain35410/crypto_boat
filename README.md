@@ -12,6 +12,7 @@ CBot est un projet de prédiction et de surveillance en temps réel des cryptomo
 4. **Tableau de bord interactif** : Le tableau de bord Dash affiche les données des 30 derniers jours, les volumes échangés, les prédictions et les caractéristiques des cryptomonnaies.
 5. **Authentification utilisateur** : Les utilisateurs peuvent être ajoutés, supprimés et authentifiés via l'API FastAPI.
 6. **Orchestration avec Airflow** : Toutes les tâches sont orchestrées par Airflow : ingestion des données, mise à jour, entraînement de modèles et prédictions.
+7. **Monitoring avec Grafana et Prometheus** : La supervision est réalisée avec Grafana et Prometheus.
 
 ## Structure du Projet
 
@@ -28,8 +29,7 @@ CBot/
 │   └── websocket_stream_dag.py          # Ingestion des données en temps réel
 ├── docker/                              # Fichiers Docker
 │   ├── Dockerfile_airflow               # Dockerfile pour Airflow
-│   ├── Dockerfile_api                   # Dockerfile pour l'API FastAPI
-│   └── Dockerfile_train_model           # Dockerfile pour l'entraînement des modèles
+│   └── Dockerfile_api                   # Dockerfile pour l'API FastAPI
 ├── logs/                                # Répertoire pour stocker les logs d'Airflow
 ├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
 ├── plugins/                             # Plugins Airflow (si nécessaires)
@@ -46,7 +46,26 @@ CBot/
 ├── README.md                            # Documentation du projet
 ├── requirements_airflow.txt             # Dépendances pour Airflow
 ├── requirements_api.txt                 # Dépendances pour l'API
-└── requirements_train_model.txt         # Dépendances pour l'entraînement des modèles
+└── monitoring/                          # Supervision
+    ├── alertmanager/                    # Configuration d'AlertManager
+    │   ├── alert.rules/alerts.rules.yml
+    │   ├── alertmanager.yml
+    │   └── templates/default.tmpl
+    ├── bin/                             # Binaire de supervision
+    │   ├── my_entrypoint.sh
+    │   ├── node_exporter
+    │   └── statsd_exporter
+    ├── blackbox/blackbox.yml            # Supervision des URL
+    ├── grafana/                         # Configuration de Grafana
+    │   ├── dashboards/                  # Dashboards pour Grafana
+    │   │   ├── airflow_grafana_dashboard.json
+    │   │   ├── alertmanager.json
+    │   │   ├── blackbox-exporter.json
+    │   │   └── monitoring-machine.json
+    │   ├── dashboards.yml
+    │   ├── datasource.yml
+    │   └── grafana.ini
+    └── prometheus/prometheus.yml        # Configuration de Prometheus
 
 ```
 
@@ -56,6 +75,8 @@ CBot/
 - **Docker Compose** : Version 1.29.2 ou supérieure
 - **Airflow** : Version 2.8.1
 - **Python** : Version 3.8
+- **Grafana** : Version 8.5.20
+- **Prometheus** : Version 2.11.1
 
 ## Installation
 
@@ -82,19 +103,22 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 ```
 
 5. Accédez à l'interface Airflow pour vérifier les DAGs : 
-   ```
-   http://localhost:8080
-   ```
+    http://localhost:8080
 
 6. Le tableau de bord Dash est accessible à l'adresse :
-   ```
-   http://localhost:8050
-   ```
+    http://localhost:8050
 
 7. L'API FastAPI est accessible à l'adresse :
-   ```
-   http://localhost:8000
-   ```
+    http://localhost:8000
+
+8. Le monitoring est accessible aux adresses :
+
+| Monitoring    | Adresses              |
+|---------------|-----------------------|
+| Prometheus    | http://localhost:9090 |
+| Alertmanager  | http://localhost:9093 |
+| Grafana       | http://localhost:3000 |
+| Node exporter | http://localhost:9100 |
 
 ## Fonctionnement
 
@@ -113,8 +137,8 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 
 Les paramètres de configuration, comme les intervalles de téléchargement des données et les modèles à entraîner, sont ajustables dans les variables Airflow.
 
-| Nom de la variable                  | Description                               | Valeur         |
-|-------------------------------------|-------------------------------------------|----------------|
+| Nom de la variable                  | Description                                | Valeur         |
+|-------------------------------------|--------------------------------------------|----------------|
 | `crypto_data_ingestion_date_end`    | End date for crypto_data_ingestion DAG     | 2024-10-30     |
 | `crypto_data_ingestion_date_start`  | Start date for crypto_data_ingestion DAG   | 2020-04-01     |
 | `crypto_data_ingestion_interval`    | Interval for crypto_data_ingestion DAG     | 15m            |
@@ -122,6 +146,12 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 | `train_model_date_start`            | Start date for train_model DAG             | 2020-04-01     |
 | `train_model_interval`              | Interval for train_model DAG               | 15m            |
 | `websocket_stream_interval`         | Interval for websocket_stream DAG          | 5s             |
+
+## Grafana
+
+login : `admin`
+
+password : `adminopa2024`
 
 ## Auteur
 

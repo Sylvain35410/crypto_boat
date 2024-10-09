@@ -3,13 +3,13 @@ from airflow.models import Variable
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 # Configuration des paramètres par défaut du DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(1),
+    'start_date': datetime.now(),
     'email_on_failure': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
@@ -20,8 +20,8 @@ with DAG(
     'crypto_data_ingestion_dag',
     default_args=default_args,
     description='Ingest crypto data every 15 minutes',
-    # schedule_interval='*/15 * * * *',  # Exécution toutes les 15 minutes
-    schedule_interval=None,  # Exécution temporairement manuelle
+    schedule_interval='*/15 * * * *',  # Exécution toutes les 15 minutes
+    # schedule_interval=None,  # Exécution temporairement manuelle
 ) as dag:
 
     # Groupe de tâches pour récupérer les données depuis CoinGecko

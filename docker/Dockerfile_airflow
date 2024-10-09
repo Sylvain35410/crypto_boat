@@ -11,6 +11,12 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && apt-get clean
 
+# Installation du node-exporter
+COPY ./monitoring/bin/node_exporter /bin/
+COPY ./monitoring/bin/statsd_exporter /bin/
+COPY ./monitoring/bin/my_entrypoint.sh /
+RUN chmod 755 /bin/node_exporter /bin/statsd_exporter /my_entrypoint.sh
+
 # Revenir à l'utilisateur airflow pour les dernières configurations
 USER airflow
 
@@ -25,3 +31,7 @@ COPY ./app /opt/airflow/app
 COPY ./dags /opt/airflow/dags
 COPY ./scripts /opt/airflow/scripts
 COPY ./sql /opt/airflow/sql
+
+EXPOSE 9100 9102
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/my_entrypoint.sh"]
