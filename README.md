@@ -28,8 +28,7 @@ CBot/
 │   └── websocket_stream_dag.py          # Ingestion des données en temps réel
 ├── docker/                              # Fichiers Docker
 │   ├── Dockerfile_airflow               # Dockerfile pour Airflow
-│   ├── Dockerfile_api                   # Dockerfile pour l'API FastAPI
-│   └── Dockerfile_train_model           # Dockerfile pour l'entraînement des modèles
+│   └── Dockerfile_api                   # Dockerfile pour l'API FastAPI
 ├── logs/                                # Répertoire pour stocker les logs d'Airflow
 ├── model/                               # Répertoire pour stocker les modèles entraînés (.pkl)
 ├── plugins/                             # Plugins Airflow (si nécessaires)
@@ -46,7 +45,30 @@ CBot/
 ├── README.md                            # Documentation du projet
 ├── requirements_airflow.txt             # Dépendances pour Airflow
 ├── requirements_api.txt                 # Dépendances pour l'API
-└── requirements_train_model.txt         # Dépendances pour l'entraînement des modèles
+└── monitoring/
+    ├── alertmanager/
+    |   ├── alert.rules/
+    |   |   └── alerts.rules.yml
+    |   ├── alertmanager.yml
+    |   └── templates/
+    |       └── default.tmpl
+    ├── bin/
+    |   ├── my_entrypoint.sh
+    |   ├── node_exporter
+    |   └── statsd_exporter
+    ├── blackbox/
+    |   └── blackbox.yml
+    ├── grafana/
+    |   ├── dashboards/
+    |   |   ├── airflow_grafana_dashboard.json
+    |   |   ├── alertmanager.json
+    |   |   ├── blackbox-exporter.json
+    |   |   └── monitoring-machine.json
+    |   ├── dashboards.yml
+    |   ├── datasource.yml
+    |   └── grafana.ini
+    └── prometheus/
+        └── prometheus.yml
 
 ```
 
