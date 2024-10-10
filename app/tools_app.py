@@ -1,7 +1,8 @@
 import os
 import pickle
+from fastapi import HTTPException
 from datetime import datetime
-from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data, get_id_interval, get_id_crypto_characteristics, __connect_db
+from scripts.lib_sql import get_stream_price_and_next_time, get_historical_data, get_id_interval, get_id_crypto_characteristics, __connect_db, __get_query_to_df
 
 # Charger le modèle pré-entraîné
 def load_model(symbol, interval):
@@ -166,9 +167,9 @@ def get_crypto_characteristics(symbol):
         query = f"""
         SELECT name, symbol, market_cap, circulating_supply, max_supply
         FROM crypto_characteristics
-        WHERE symbol = '{symbol}'
+        WHERE symbol = %s
         """
-        characteristics_df = get_data_from_db(query)
+        characteristics_df = __get_query_to_df(query, (symbol,))
         
         if characteristics_df.empty:
             raise ValueError(f"Crypto characteristics not found for symbol: {symbol}")
@@ -179,4 +180,3 @@ def get_crypto_characteristics(symbol):
         # Gérer les erreurs de base de données ou autres exceptions
         print(f"Error retrieving crypto characteristics: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving characteristics for {symbol}: {str(e)}")
-

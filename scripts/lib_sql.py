@@ -280,6 +280,7 @@ def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, 
     - Si `lags` est False : retourne un DataFrame Pandas avec les données historiques.
     - Si `lags` est True : retourne un tuple `(feats, target)` avec les features et la cible pour les prédictions.
     """
+
     if lags:
         try:
             connection = __connect_db()
@@ -337,10 +338,18 @@ def get_historical_data(id_symbol, id_interval, start_time=None, end_time=None, 
 
     else:
         # Si lags est False, on récupère les données sans décalage
+        # query = '''
+        #     SELECT open_price, high_price, low_price, close_price,
+        #         volume, quote_asset_volume, number_of_trades, 
+        #         taker_buy_base_asset_volume, taker_buy_quote_asset_volume
+        #     FROM historical_crypto_data
+        #     WHERE id_crypto_characteristics = %s
+        #       AND id_interval = %s
+        #       AND open_time BETWEEN %s AND %s
+        #     ORDER BY open_time DESC
+        # '''
         query = '''
-            SELECT open_price, high_price, low_price, close_price,
-                volume, quote_asset_volume, number_of_trades, 
-                taker_buy_base_asset_volume, taker_buy_quote_asset_volume
+            SELECT open_time, open_price, high_price, low_price, close_price, volume
             FROM historical_crypto_data
             WHERE id_crypto_characteristics = %s
               AND id_interval = %s

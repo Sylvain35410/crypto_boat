@@ -1,3 +1,5 @@
+import pytz
+from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from pydantic import EmailStr
@@ -7,7 +9,7 @@ from scripts.lib_sql import (
     delete_user_from_db, get_current_user, get_id_crypto_characteristics,
     get_id_interval, get_historical_data
 )
-from app.tools_app import make_prediction_and_decision, get_crypto_characteristics, get_current_stream_price
+from tools_app import make_prediction_and_decision, get_crypto_characteristics, get_current_stream_price
 
 security = HTTPBasic()
 
@@ -31,7 +33,7 @@ async def healthcheck():
         raise HTTPException(status_code=503, detail="Database disconnected")
 
 # Endpoint pour authentifier un utilisateur
-@app.post("/authenticate")
+@app.get("/authenticate")
 async def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
     """
     Authentifie un utilisateur et retourne son nom d'utilisateur si les informations sont valides.
@@ -200,7 +202,9 @@ async def get_historical_data_endpoint(symbol: str, interval: str):
         if id_symbol is None or id_interval is None:
             raise HTTPException(status_code=404, detail="Invalid symbol or interval.")
 
-        historical_data = get_historical_data(id_symbol, id_interval)
+        end_time = int(datetime.now().replace(tzinfo=pytz.UTC).timestamp() * 1000 )
+        start_time = end_time - 5*365*24*60*60*1000
+        historical_data = get_historical_data(id_symbol, id_interval, start_time, end_time)
 
         if historical_data.empty:
             raise HTTPException(status_code=404, detail="No historical data found for this symbol and interval.")
