@@ -114,7 +114,7 @@ def handle_login(n_clicks, input_username, input_password):
     if n_clicks > 0:
         credentials = HTTPBasicAuth(input_username, input_password)
         # Appel de l'API pour authentifier l'utilisateur
-        api_url = 'http://localhost:8000'
+        api_url = 'http://api:8000'
         auth_response = fetch_data(api_url, 'authenticate', credentials=credentials)
 
         if 'message' in auth_response:
@@ -151,7 +151,7 @@ def update_dashboard(n_intervals, symbol, interval, username, password):
     """
     # Authentification
     credentials = HTTPBasicAuth(username, password)
-    api_url = 'http://localhost:8000'
+    api_url = 'http://api:8000'
     
     # Appels API pour récupérer les données
     historical_data = fetch_data(api_url, 'get_historical_data', {'symbol': symbol, 'interval': interval}, credentials)
@@ -244,5 +244,3 @@ def update_dashboard(n_intervals, symbol, interval, username, password):
 # Lancer l'application Dash
 if __name__ == '__main__':
     app.run_server(debug=True, host='0.0.0.0', port=8050)
-
-
