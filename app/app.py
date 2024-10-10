@@ -203,7 +203,7 @@ async def get_historical_data_endpoint(symbol: str, interval: str):
             raise HTTPException(status_code=404, detail="Invalid symbol or interval.")
 
         end_time = int(datetime.now().replace(tzinfo=pytz.UTC).timestamp() * 1000 )
-        start_time = end_time - 5*365*24*60*60*1000
+        start_time = end_time - 1*365*24*60*60*1000
         historical_data = get_historical_data(id_symbol, id_interval, start_time, end_time)
 
         if historical_data.empty:
@@ -212,5 +212,3 @@ async def get_historical_data_endpoint(symbol: str, interval: str):
         return historical_data.to_dict(orient='records')  # Retourne les données sous forme de liste de dictionnaires
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving historical data: {str(e)}")
-
-
