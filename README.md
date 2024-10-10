@@ -1,6 +1,6 @@
 # CBot
 
-![CBot Workflow](./Cbot.gif)
+![CBot Workflow](./CBot.gif)
 
 ## Description
 CBot est un projet de prédiction et de surveillance en temps réel des cryptomonnaies, principalement pour les paires BTC/USDT et ETH/USDT. Le projet télécharge et analyse les données historiques et en temps réel depuis Binance et CoinGecko, entraîne des modèles de prédiction, et prend des décisions en fonction de l'évolution des prix. CBot utilise Airflow pour orchestrer les tâches, FastAPI pour l'API REST, et Dash pour afficher les données sur un tableau de bord interactif.
@@ -132,6 +132,9 @@ psql --host 0.0.0.0 --port 5432 --user airflow -f sql/init_db.sql
 - **/add_user** : Ajoute un utilisateur dans la base de données PostgreSQL.
 - **/delete_user** : Supprime un utilisateur de la base de données.
 - **/predict_and_decide** : Prédit le prix de clôture et fournit une décision (Buy, Sell ou Hold).
+- **/get_current_price** : Récupère le dernier prix de clôture de la cryptomonnaie en temps réel.
+- **/get_crypto_characteristics** : Récupère les caractéristiques d'une cryptomonnaie (nom, symbole, market_cap, circulating_supply, max_supply).
+- **/get_historical_data** : Récupère les données historiques (open, high, low, close, volume) pour une cryptomonnaie donnée.
 
 ## Configuration
 
@@ -149,9 +152,9 @@ Les paramètres de configuration, comme les intervalles de téléchargement des 
 
 ## Grafana
 
-login : `admin`
+- **login** : `admin`
 
-password : `adminopa2024`
+- **password** : `adminopa2024`
 
 ## Auteur
 
